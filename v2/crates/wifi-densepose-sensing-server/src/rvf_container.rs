@@ -535,7 +535,8 @@ impl RvfReader {
 
     /// Parse an RVF container from a byte slice.
     pub fn from_bytes(data: &[u8]) -> Result<Self, String> {
-        if data.first() == Some(&b'{') {
+        let first_non_ws = data.iter().find(|&&b| !b.is_ascii_whitespace());
+        if first_non_ws == Some(&b'{') {
             return Self::from_jsonl_bytes(data);
         }
         let mut segments = Vec::new();
