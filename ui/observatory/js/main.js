@@ -1,5 +1,5 @@
 /**
- * RuView Observatory — Main Scene Orchestrator
+ * AetherSense Observatory — Main Scene Orchestrator
  *
  * Room-based WiFi sensing visualization with:
  * - Pool of 4 human wireframe figures (multi-person scenarios)
@@ -42,13 +42,13 @@ class Observatory {
 
     // Load saved settings
     try {
-      const ver = localStorage.getItem('ruview-settings-version');
+      const ver = localStorage.getItem('aethersense-settings-version');
       if (ver === SETTINGS_VERSION) {
-        const saved = localStorage.getItem('ruview-observatory-settings');
+        const saved = localStorage.getItem('aethersense-observatory-settings');
         if (saved) Object.assign(this.settings, JSON.parse(saved));
       } else {
-        localStorage.removeItem('ruview-observatory-settings');
-        localStorage.setItem('ruview-settings-version', SETTINGS_VERSION);
+        localStorage.removeItem('aethersense-observatory-settings');
+        localStorage.setItem('aethersense-settings-version', SETTINGS_VERSION);
       }
     } catch {}
 
@@ -517,12 +517,33 @@ class Observatory {
     this._nebula.update(dt, elapsed);
     this._figurePool.update(data, elapsed);
     this._scenarioProps.update(data, this._demoData.currentScenario);
+
+    // Update HUD & Map exploration (this will populate dynamic walls into data.world_graph.nodes)
+    this._hud.updateHUD(data, this._demoData, dt);
+    this._hud.updateSparkline(data);
+
+    // Dynamic WorldGraph mapping (ADR-139)
+    if (data && data.world_graph && data.world_graph.nodes) {
+      // 1. Render dynamic wall meshes
+      this._updateDynamicWalls(data.world_graph.nodes);
+
+      // 2. Reposition scenario props dynamically based on anchors
+      this._scenarioProps.resetProps();
+      for (const node of data.world_graph.nodes) {
+        if (node.kind === 'object_anchor' && node.position) {
+          const name = node.name;
+          const x = node.position.east_m;
+          const y = node.position.up_m || 0;
+          const z = node.position.north_m;
+          this._scenarioProps.positionProp(name, x, y, z, node.rotation_y || 0);
+        }
+      }
+    }
+
     this._updateDotMatrixMist(data, elapsed);
     this._updateParticleTrail(data, dt, elapsed);
     this._updateWifiWaves(elapsed);
     this._updateSignalField(data);
-    this._hud.updateHUD(data, this._demoData);
-    this._hud.updateSparkline(data);
 
     // Router LED
     this._routerLed.material.opacity = 0.5 + 0.5 * Math.sin(elapsed * 8);
@@ -544,6 +565,69 @@ class Observatory {
     this._postProcessing.update(elapsed);
     this._postProcessing.render();
     this._updateFPS(dt);
+  }
+
+  /**
+   * Render dynamic walls based on coordinate nodes (ADR-139).
+   */
+  _updateDynamicWalls(nodes) {
+    if (!this._wallGroup) {
+      this._wallGroup = new THREE.Group();
+      this._scene.add(this._wallGroup);
+    }
+
+    const wallNodes = nodes.filter(n => n.kind === 'wall');
+    
+    // Check if wall set has changed to avoid rebuilding meshes every frame
+    const wallKey = wallNodes.map(w => `${w.id}:${w.a.east_m},${w.a.north_m}-${w.b.east_m},${w.b.north_m}`).join('|');
+    if (this._lastWallKey === wallKey) return;
+    this._lastWallKey = wallKey;
+
+    this._wallGroup.clear();
+
+    const wallMat = new THREE.MeshStandardMaterial({
+      color: 0x0a6b3a,
+      transparent: true,
+      opacity: 0.12,
+      roughness: 0.5,
+      metalness: 0.2,
+      side: THREE.DoubleSide
+    });
+
+    const wireMat = new THREE.LineBasicMaterial({
+      color: 0x3eff8a,
+      transparent: true,
+      opacity: 0.25
+    });
+
+    for (const w of wallNodes) {
+      const x1 = w.a.east_m;
+      const z1 = w.a.north_m;
+      const x2 = w.b.east_m;
+      const z2 = w.b.north_m;
+
+      const dx = x2 - x1;
+      const dz = z2 - z1;
+      const length = Math.sqrt(dx * dx + dz * dz);
+      const angle = Math.atan2(dx, dz);
+
+      // Create a vertical wall panel slab (2.5m height, 0.08m thick)
+      const geo = new THREE.BoxGeometry(0.08, 2.5, length);
+      const mesh = new THREE.Mesh(geo, wallMat);
+
+      // Center at midpoint of segment
+      mesh.position.set((x1 + x2) / 2, 1.25, (z1 + z2) / 2);
+      mesh.rotation.y = angle;
+
+      this._wallGroup.add(mesh);
+
+      // Techy glowing outline for wall boundaries
+      const edges = new THREE.EdgesGeometry(geo);
+      const wire = new THREE.LineSegments(edges, wireMat);
+      wire.position.copy(mesh.position);
+      wire.rotation.copy(mesh.rotation);
+      this._wallGroup.add(wire);
+    }
   }
 
 

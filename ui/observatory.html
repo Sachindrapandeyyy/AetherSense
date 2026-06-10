@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RuView Observatory — WiFi DensePose</title>
+  <title>AetherSense Observatory — AetherSense</title>
   <link rel="stylesheet" href="observatory/css/observatory.css">
 </head>
 <body>
@@ -14,8 +14,8 @@
 
     <!-- Top-left: Branding -->
     <div id="brand">
-      <div id="brand-logo"><span class="pi">&pi;</span> RuView</div>
-      <div id="brand-tagline">WiFi DensePose Sensing Observatory</div>
+      <div id="brand-logo"><span class="pi">&pi;</span> AetherSense</div>
+      <div id="brand-tagline">AetherSense Sensing Observatory</div>
     </div>
 
     <!-- Top-right: Connection + status + gear -->
@@ -72,6 +72,28 @@
           <div class="vital-label">Confidence</div>
           <div class="vital-value"><span id="conf-value">--</span><span class="vital-unit">%</span></div>
           <div class="vital-bar"><div id="conf-bar" class="vital-bar-fill vital-bar--conf"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Left panel 2: Floorplan Heatmap -->
+    <div id="panel-floorplan" class="data-panel">
+      <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span>House Structure Map</span>
+        <button id="btn-reset-map" title="Reset mapping exploration" style="background: none; border: 1px solid rgba(0, 216, 120, 0.3); border-radius: 4px; color: var(--green-glow); font-family: 'JetBrains Mono', monospace; font-size: 8px; padding: 2px 6px; cursor: pointer; pointer-events: auto; outline: none; transition: all 0.2s;">RESET</button>
+      </div>
+      <div class="floorplan-container">
+        <canvas id="floorplan-canvas" width="200" height="140"></canvas>
+      </div>
+      <div class="map-stats" style="margin-top: 8px; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-secondary);">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+          <span>Map Coverage:</span>
+          <span id="map-coverage-val">0%</span>
+        </div>
+        <div class="vital-bar" style="margin-top: 2px; margin-bottom: 6px; height: 4px;"><div id="map-coverage-bar" class="vital-bar-fill" style="background: var(--green-glow); width: 0%;"></div></div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Status:</span>
+          <span id="map-status-val" style="color: var(--amber); font-weight: bold;">INITIALIZING...</span>
         </div>
       </div>
     </div>

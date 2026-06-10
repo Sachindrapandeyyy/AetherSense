@@ -1,5 +1,5 @@
 /* ============================================================
-   RuView Observatory — Foundation Color Scheme
+   AetherSense Observatory — Foundation Color Scheme
    Warm dark background, electric green wireframe, amber data
    ============================================================ */
 
@@ -184,8 +184,26 @@ body {
 /* ---- Vitals Panel (left) ---- */
 #panel-vitals {
   left: 28px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 115px;
+}
+
+#panel-floorplan {
+  left: 28px;
+  bottom: 74px;
+}
+
+.floorplan-container {
+  width: 100%;
+  margin-top: 8px;
+}
+
+#floorplan-canvas {
+  width: 100%;
+  height: 140px;
+  display: block;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(0, 216, 120, 0.15);
 }
 
 .vital-row {

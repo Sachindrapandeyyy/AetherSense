@@ -10,6 +10,8 @@
  * - Quick-select scenario dropdown
  */
 
+import { StructureMappingEngine } from './structure-mapping.js';
+
 // ---- Constants ----
 
 export const SCENARIO_NAMES = [
@@ -146,6 +148,8 @@ export class HudController {
     this._settingsOpen = false;
     this._rssiHistory = [];
     this._sparklineCtx = document.getElementById('rssi-sparkline')?.getContext('2d');
+    this._floorplanCanvas = document.getElementById('floorplan-canvas');
+    this._floorplanCtx = this._floorplanCanvas?.getContext('2d');
 
     // Lerp state for smooth vital-sign transitions
     this._lerpHr = 0;
@@ -154,6 +158,24 @@ export class HudController {
 
     // Track current scenario for description/edge updates
     this._currentScenarioKey = null;
+
+    // Initialize spatial mapping and structure detection engine
+    this._mappingEngine = new StructureMappingEngine();
+
+    // Bind map reset button
+    const resetBtn = document.getElementById('btn-reset-map');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        this._mappingEngine.reset();
+        // Visual button click indicator
+        resetBtn.style.borderColor = 'rgba(255, 48, 64, 0.6)';
+        resetBtn.style.color = 'var(--red-alert)';
+        setTimeout(() => {
+          resetBtn.style.borderColor = 'rgba(0, 216, 120, 0.3)';
+          resetBtn.style.color = 'var(--green-glow)';
+        }, 300);
+      });
+    }
   }
 
   // ============================================================
@@ -268,7 +290,7 @@ export class HudController {
       const blob = new Blob([JSON.stringify(s, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'ruview-observatory-settings.json';
+      a.download = 'aethersense-observatory-settings.json';
       a.click();
     });
     document.getElementById('btn-reset-settings').addEventListener('click', () => {
@@ -316,7 +338,7 @@ export class HudController {
 
   saveSettings() {
     try {
-      localStorage.setItem('ruview-observatory-settings', JSON.stringify(this._obs.settings));
+      localStorage.setItem('aethersense-observatory-settings', JSON.stringify(this._obs.settings));
     } catch {}
   }
 
@@ -373,8 +395,9 @@ export class HudController {
   // HUD update (called every frame)
   // ============================================================
 
-  updateHUD(data, demoData) {
+  updateHUD(data, demoData, dt = 0.05) {
     if (!data) return;
+    this.updateFloorplan(data, dt);
     const vs = data.vital_signs || {};
     const feat = data.features || {};
     const cls = data.classification || {};
@@ -563,5 +586,215 @@ export class HudController {
       const color = MODULE_COLORS[m] || 'var(--text-secondary)';
       return `<span class="edge-badge" style="--badge-color:${color}">${m}</span>`;
     }).join('');
+  }
+
+  updateFloorplan(data, dt = 0.05) {
+    if (!this._floorplanCtx || !this._floorplanCanvas) return;
+    
+    // Update mapping engine state
+    this._mappingEngine.update(data, dt);
+    
+    // Sync HUD stats overlay
+    const covVal = document.getElementById('map-coverage-val');
+    const covBar = document.getElementById('map-coverage-bar');
+    const statusVal = document.getElementById('map-status-val');
+    
+    const progressPct = Math.round(this._mappingEngine.overallProgress * 100);
+    if (covVal) covVal.textContent = `${progressPct}%`;
+    if (covBar) covBar.style.width = `${progressPct}%`;
+    if (statusVal) {
+      statusVal.textContent = this._mappingEngine.statusText;
+      if (progressPct >= 90) {
+        statusVal.style.color = 'var(--green-glow)';
+      } else {
+        statusVal.style.color = 'var(--amber)';
+      }
+    }
+
+    const ctx = this._floorplanCtx;
+    const w = this._floorplanCanvas.width;
+    const h = this._floorplanCanvas.height;
+    
+    // 1. Clear canvas
+    ctx.clearRect(0, 0, w, h);
+    
+    // 2. Draw Exploration & Structural Heatmap Grid
+    const gridRows = 20;
+    const gridCols = 24;
+    const cellW = w / gridCols;
+    const cellH = h / gridRows;
+
+    for (let r = 0; r < gridRows; r++) {
+      for (let c = 0; c < gridCols; c++) {
+        const cell = this._mappingEngine.grid[r][c];
+        
+        if (cell.explored > 0.01) {
+          // Draw explored walkable grid cells (fading neon green/cyan)
+          ctx.fillStyle = `rgba(0, 216, 120, ${0.02 + cell.explored * 0.12})`;
+          ctx.fillRect(c * cellW + 0.5, r * cellH + 0.5, cellW - 0.5, cellH - 0.5);
+        }
+        
+        if (cell.wall_prob > 0.02) {
+          // Draw wall probability heatmap cells (orange/red glow)
+          ctx.fillStyle = `hsla(15, 90%, 50%, ${cell.wall_prob * 0.35})`;
+          ctx.fillRect(c * cellW + 0.5, r * cellH + 0.5, cellW - 0.5, cellH - 0.5);
+        }
+
+        // Draw sparse background scanning grid dots for unexplored areas
+        if (cell.explored <= 0.01 && cell.wall_prob <= 0.02) {
+          ctx.fillStyle = 'rgba(232, 236, 224, 0.04)';
+          ctx.fillRect(c * cellW + cellW/2 - 0.5, r * cellH + cellH/2 - 0.5, 1, 1);
+        }
+      }
+    }
+    
+    // 3. Draw Mapped Walls and Doors
+    const walls = this._mappingEngine.getWallSegments();
+    
+    // Draw outer boundary always (baseline coordinates)
+    ctx.strokeStyle = 'rgba(0, 216, 120, 0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.shadowBlur = 0;
+    ctx.strokeRect(4, 4, w - 8, h - 8);
+
+    for (const seg of walls) {
+      if (seg.confidence <= 0.05) continue;
+      
+      // Project 3D meters to 2D canvas coords
+      const ax = w * 0.5 + (seg.a.x / 6.0) * (w * 0.45);
+      const az = h * 0.5 + (seg.a.z / 5.0) * (h * 0.45);
+      const bx = w * 0.5 + (seg.b.x / 6.0) * (w * 0.45);
+      const bz = h * 0.5 + (seg.b.z / 5.0) * (h * 0.45);
+
+      if (seg.type === 'wall') {
+        // Draw detected solid wall division
+        ctx.strokeStyle = `hsla(145, 95%, 45%, ${seg.confidence * 0.7})`;
+        ctx.lineWidth = 3;
+        ctx.shadowColor = 'rgba(0, 216, 120, 0.5)';
+        ctx.shadowBlur = 3;
+        
+        ctx.beginPath();
+        ctx.moveTo(ax, az);
+        ctx.lineTo(bx, bz);
+        ctx.stroke();
+      } else if (seg.type === 'door') {
+        // Draw detected door swing arc
+        ctx.strokeStyle = `rgba(255, 176, 32, ${seg.confidence * 0.8})`;
+        ctx.lineWidth = 1.5;
+        ctx.shadowBlur = 0;
+        
+        const doorLen = Math.sqrt((bx - ax) ** 2 + (bz - az) ** 2);
+        
+        // Set line style to dashed for swing
+        ctx.setLineDash([2, 2]);
+        ctx.beginPath();
+        if (ax === bx) {
+          // Vertical door swing (hinge at max Z)
+          const hingeY = Math.max(az, bz);
+          ctx.arc(ax, hingeY, doorLen, Math.PI * 1.5, Math.PI * 2);
+        } else {
+          // Horizontal door swing (hinge at min X)
+          const hingeX = Math.min(ax, bx);
+          ctx.arc(hingeX, az, doorLen, 0, Math.PI * 0.5);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Draw solid door leaf at 45 degrees
+        ctx.beginPath();
+        if (ax === bx) {
+          const hingeY = Math.max(az, bz);
+          ctx.moveTo(ax, hingeY);
+          ctx.lineTo(ax + doorLen * 0.707, hingeY - doorLen * 0.707);
+        } else {
+          const hingeX = Math.min(ax, bx);
+          ctx.moveTo(hingeX, az);
+          ctx.lineTo(hingeX + doorLen * 0.707, az + doorLen * 0.707);
+        }
+        ctx.stroke();
+      }
+    }
+    
+    // 4. Draw Discovered Room Labels
+    const rooms = this._mappingEngine.getRooms();
+    ctx.shadowBlur = 0;
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    
+    for (const room of rooms) {
+      if (room.explored > 0.05) {
+        const cx = w * 0.5 + (((room.minX + room.maxX) / 2) / 6.0) * (w * 0.45);
+        const cz = h * 0.5 + (((room.minZ + room.maxZ) / 2) / 5.0) * (h * 0.45);
+        
+        ctx.fillStyle = `rgba(232, 236, 224, ${room.explored * 0.65})`;
+        ctx.fillText(room.name, cx, cz);
+        
+        if (room.explored > 0.8) {
+          ctx.fillStyle = 'rgba(0, 216, 120, 0.4)';
+          ctx.font = '6px monospace';
+          ctx.fillText('MAPPED', cx, cz + 8);
+          ctx.font = 'bold 8px monospace';
+        }
+      }
+    }
+    
+    // 5. Draw Transmitter & Receiver nodes
+    const txX = w * 0.5 + (-4.0 / 6.0) * (w * 0.45);
+    const txZ = h * 0.5 + (-3.0 / 5.0) * (h * 0.45);
+    ctx.fillStyle = '#2090ff';
+    ctx.beginPath();
+    ctx.arc(txX, txZ, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 8px monospace';
+    ctx.fillText('TX', txX, txZ - 6);
+    
+    const rxX = w * 0.5 + (-4.0 / 6.0) * (w * 0.45);
+    const rxZ = h * 0.5 + (3.0 / 5.0) * (h * 0.45);
+    ctx.fillStyle = '#00d878';
+    ctx.beginPath();
+    ctx.arc(rxX, rxZ, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('RX', rxX, rxZ - 6);
+    
+    // 6. Draw tracked persons as radar blips
+    const persons = data?.persons || [];
+    for (let i = 0; i < persons.length; i++) {
+      const p = persons[i];
+      if (p.position) {
+        const px = w * 0.5 + (p.position[0] / 6.0) * (w * 0.45);
+        const pz = h * 0.5 + (p.position[2] / 5.0) * (h * 0.45);
+        
+        // Pulse ring
+        const rad = 6 + (Math.sin(Date.now() * 0.01 + i) * 3);
+        ctx.strokeStyle = 'rgba(255, 112, 32, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(px, pz, rad, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Solid center
+        ctx.fillStyle = '#ff7020';
+        ctx.beginPath();
+        ctx.arc(px, pz, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Facing indicator vector line
+        if (p.facing !== undefined) {
+          ctx.strokeStyle = 'rgba(255, 112, 32, 0.85)';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(px, pz);
+          ctx.lineTo(px + Math.sin(p.facing) * 7, pz + Math.cos(p.facing) * 7);
+          ctx.stroke();
+        }
+        
+        // ID Label
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.fillText(`P${i}`, px + 7, pz - 4);
+      }
+    }
   }
 }
