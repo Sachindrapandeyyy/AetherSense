@@ -1,4 +1,4 @@
-//! wifi-densepose-geo — geospatial satellite integration for RuView.
+//! wifi-densepose-geo — geospatial satellite integration for AetherSense.
 //!
 //! Provides: IP geolocation, satellite tile fetching (Sentinel-2),
 //! SRTM elevation, OSM buildings/roads, coordinate transforms,

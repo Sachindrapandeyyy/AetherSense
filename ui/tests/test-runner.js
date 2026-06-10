@@ -1,4 +1,4 @@
-// Test Runner for WiFi DensePose UI
+// Test Runner for AetherSense UI
 
 import { API_CONFIG, buildApiUrl, buildWsUrl } from '../config/api.config.js';
 import { apiService } from '../services/api.service.js';

@@ -3,7 +3,7 @@
 - **Status:** Proposed
 - **Date:** 2026-04-06
 - **Source:** [QE Analysis Gist (2026-04-05)](https://gist.github.com/proffesor-for-testing/a6b84d7a4e26b7bbef0cf12f932925b7)
-- **Full Reports:** [proffesor-for-testing/RuView `qe-reports` branch](https://github.com/proffesor-for-testing/RuView/tree/qe-reports/docs/qe-reports)
+- **Full Reports:** [proffesor-for-testing/AetherSense `qe-reports` branch](https://github.com/proffesor-for-testing/AetherSense/tree/qe-reports/docs/qe-reports)
 
 ## Context
 

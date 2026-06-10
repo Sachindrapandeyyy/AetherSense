@@ -6,15 +6,15 @@
   "status": "Accepted",
   "initializedDate": "2026-05-30",
   "targetDate": "2026-08-31",
-  "exitCriteria": "Benchmark INFRASTRUCTURE done, tested, CI-gated, deploy-ready: aa_score_runner.rs passes deterministic fixture test; CI harness-gate green on every PR; aether-arena repo scaffold committed (README four-part framing + aa-submission.toml schema + VERIFY.md); public smoke split committed; HF Space lifecycle skeleton deployed; signed Parquet ledger functional; RuView baseline PCK@20 ~2.5% entered; ADR-149 §7 acceptance test (five-step stranger test) passes. NOTE: ML SOTA (MM-Fi PCK@20 ~72%) is a separate long-running stretch goal blocked on ADR-079 camera-ground-truth — it is NOT an infra exit criterion.",
+  "exitCriteria": "Benchmark INFRASTRUCTURE done, tested, CI-gated, deploy-ready: aa_score_runner.rs passes deterministic fixture test; CI harness-gate green on every PR; aether-arena repo scaffold committed (README four-part framing + aa-submission.toml schema + VERIFY.md); public smoke split committed; HF Space lifecycle skeleton deployed; signed Parquet ledger functional; AetherSense baseline PCK@20 ~2.5% entered; ADR-149 §7 acceptance test (five-step stranger test) passes. NOTE: ML SOTA (MM-Fi PCK@20 ~72%) is a separate long-running stretch goal blocked on ADR-079 camera-ground-truth — it is NOT an infra exit criterion.",
   "baselineState": {
     "adrStatus": "Accepted, committed 2026-05-30",
-    "scorerCode": "ruview_metrics.rs + ablation.rs + proof.rs exist in wifi-densepose-train; aa_score_runner.rs not yet created",
+    "scorerCode": "aethersense_metrics.rs + ablation.rs + proof.rs exist in wifi-densepose-train; aa_score_runner.rs not yet created",
     "aetherArenaRepo": "does not exist yet — needs user authorization to create ruvnet/aether-arena public repo",
     "hfSpace": "does not exist yet — needs HF_TOKEN and user authorization to deploy ruvnet/aether-arena HF Space",
     "smokeDataset": "not committed",
     "resultsLedger": "not created",
-    "ruviewBaseline": "PCK@20 ~2.5% self-reported, not formally entered",
+    "aethersenseBaseline": "PCK@20 ~2.5% self-reported, not formally entered",
     "ciGate": "not added to workflow"
   },
   "milestones": {
@@ -28,7 +28,7 @@
     "m2": {
       "name": "Deterministic scorer runner bin (aa_score_runner.rs)",
       "status": "NOT_STARTED",
-      "completionCriteria": "aa_score_runner.rs compiles, runs ruview_metrics on a committed fixture, emits RuViewTier + SHA-256 proof hash, mirrors existing *_proof_runner.rs pattern; cargo test passes",
+      "completionCriteria": "aa_score_runner.rs compiles, runs aethersense_metrics on a committed fixture, emits AetherSenseTier + SHA-256 proof hash, mirrors existing *_proof_runner.rs pattern; cargo test passes",
       "estimatedEffort": "3-5 days",
       "owner": "wifi-densepose-train crate or new aa-scorer crate"
     },
@@ -72,9 +72,9 @@
       "dependency": "M6 must be scaffolded first"
     },
     "m8": {
-      "name": "RuView baseline entry + public launch",
+      "name": "AetherSense baseline entry + public launch",
       "status": "NOT_STARTED",
-      "completionCriteria": "RuView wifi-densepose-pretrained baseline entered (honest PCK@20 ~2.5%); ADR-149 §7 five-step stranger acceptance test passes; v0 live with Presence + Pose + Edge-latency + Determinism categories active; Privacy and Cross-room shown as gated/coming-soon",
+      "completionCriteria": "AetherSense wifi-densepose-pretrained baseline entered (honest PCK@20 ~2.5%); ADR-149 §7 five-step stranger acceptance test passes; v0 live with Presence + Pose + Edge-latency + Determinism categories active; Privacy and Cross-room shown as gated/coming-soon",
       "estimatedEffort": "3-5 days",
       "dependency": "M4+M5+M6+M7 complete",
       "notes": "ML SOTA improvement (PCK@20 ~72%) is a SEPARATE stretch goal blocked on ADR-079 P7-P9 camera ground truth. NOT a blocker for infra launch."
@@ -85,16 +85,16 @@
   "knownRisks": [
     "HF_TOKEN not confirmed present in .env — check before M6 work begins",
     "ruvnet/aether-arena public repo creation is outward-facing — needs explicit user authorization",
-    "MM-Fi CC BY-NC 4.0: AA must stay legally non-commercial and brand-distinct from commercial RuView product; or seek MM-Fi commercial grant before any paid tier",
+    "MM-Fi CC BY-NC 4.0: AA must stay legally non-commercial and brand-distinct from commercial AetherSense product; or seek MM-Fi commercial grant before any paid tier",
     "Wi-Pose has research-use-only terms (no redistribution grant) — excluded from v0; revisit only if terms are clarified with authors",
     "HF Space free CPU tier may be too slow for Candle/tch inference pipeline — may need ZeroGPU or self-hosted scorer on cognitum-20260110 GCloud A100/L4",
     "ADR-079 camera-ground-truth (PCK@20 SOTA) is P7-P9 pending — NOT an infra blocker; must not be conflated with AA infra completion",
-    "Neutrality/governance risk: RuView seeded the scorer — must be demonstrably scored through the same public pipeline as any other entrant (§2.8 controls)"
+    "Neutrality/governance risk: AetherSense seeded the scorer — must be demonstrably scored through the same public pipeline as any other entrant (§2.8 controls)"
   ],
   "driftSignals": {
     "timeline": "GREEN — just initialized, no timeline pressure yet",
     "scope": "GREEN — scope locked at four-part structure per ADR-149 §2 decision",
-    "approach": "GREEN — reuse pattern (existing ruview_metrics + proof.rs) confirmed in ADR-149",
+    "approach": "GREEN — reuse pattern (existing aethersense_metrics + proof.rs) confirmed in ADR-149",
     "dependency": "YELLOW — HF_TOKEN and ruvnet/aether-arena repo authorization are external blockers with unknown ETA",
     "priority": "GREEN — active feature branch feat/adr-136-146-streaming-engine in progress; AA infra can proceed in parallel on its own branch"
   },

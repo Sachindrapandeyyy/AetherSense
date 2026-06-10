@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * RuView Multi-Frequency RF Room Scanner
+ * AetherSense Multi-Frequency RF Room Scanner
  *
  * Extended version of rf-scan.js that tracks CSI data per WiFi channel and
  * merges multi-channel data into a wideband view. Works when channel hopping
@@ -605,14 +605,14 @@ function renderASCII() {
   const activeNodes = nodeList.filter(n => n.totalFrames > 0);
 
   if (activeNodes.length === 0) {
-    lines.push(`=== RUVIEW MULTI-FREQ RF SCAN === Listening on UDP :${PORT}`);
+    lines.push(`=== AETHERSENSE MULTI-FREQ RF SCAN === Listening on UDP :${PORT}`);
     lines.push('Waiting for CSI frames from ESP32 nodes...');
     lines.push('Enable channel hopping: python provision.py --port COMx --hop-channels 1,6,11');
     lines.push(`Elapsed: ${((Date.now() - startTime) / 1000).toFixed(0)}s | Frames: ${totalFrames}`);
     return lines.join('\n');
   }
 
-  lines.push('=== RUVIEW MULTI-FREQUENCY RF SCAN ===');
+  lines.push('=== AETHERSENSE MULTI-FREQUENCY RF SCAN ===');
   lines.push('');
 
   // Per-node, per-channel view
@@ -792,7 +792,7 @@ function main() {
   server.on('listening', () => {
     const addr = server.address();
     if (!JSON_OUTPUT) {
-      console.log(`RuView Multi-Frequency RF Scanner listening on ${addr.address}:${addr.port}`);
+      console.log(`AetherSense Multi-Frequency RF Scanner listening on ${addr.address}:${addr.port}`);
       console.log('Waiting for CSI frames from ESP32 nodes...');
       console.log('Tip: Enable channel hopping with provision.py --hop-channels 1,6,11\n');
     }

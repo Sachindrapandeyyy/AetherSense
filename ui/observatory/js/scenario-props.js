@@ -89,30 +89,31 @@ export class ScenarioProps {
   // ---- BED (sleep monitoring) ----
   _buildBed(darkMat) {
     const bedGroup = new THREE.Group();
+    bedGroup.position.set(3.5, 0, -3.5);
 
     // Bed frame with legs
     const frameMat = new THREE.MeshStandardMaterial({ color: 0x7a6448, roughness: 0.55, metalness: 0.25, emissive: 0x181008, emissiveIntensity: 0.25 });
     const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.12, 1.2), frameMat);
-    bedFrame.position.set(3.5, 0.32, -3.5);
+    bedFrame.position.set(0, 0.32, 0);
     bedFrame.castShadow = true;
     bedGroup.add(bedFrame);
 
     // Frame legs (4 short posts)
-    for (const [lx, lz] of [[2.5, -4.0], [4.5, -4.0], [2.5, -3.0], [4.5, -3.0]]) {
+    for (const [lx, lz] of [[-1.0, -0.5], [1.0, -0.5], [-1.0, 0.5], [1.0, 0.5]]) {
       bedGroup.add(this._cyl(lx, 0.13, lz, 0.04, 0.04, 0.26, 6, frameMat));
     }
 
     // Headboard — tall panel at head of bed
     const headboardMat = new THREE.MeshStandardMaterial({ color: 0x6a5440, roughness: 0.65, emissive: 0x140e08, emissiveIntensity: 0.2 });
     const headboard = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.7, 1.2), headboardMat);
-    headboard.position.set(2.38, 0.65, -3.5);
+    headboard.position.set(-1.12, 0.65, 0);
     headboard.castShadow = true;
     bedGroup.add(headboard);
 
     // Mattress
     const mattressMat = new THREE.MeshStandardMaterial({ color: 0x484860, roughness: 0.75, emissive: 0x0c0c1a, emissiveIntensity: 0.2 });
     const mattress = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.15, 1.1), mattressMat);
-    mattress.position.set(3.5, 0.455, -3.5);
+    mattress.position.set(0, 0.455, 0);
     mattress.castShadow = true;
     bedGroup.add(mattress);
 
@@ -131,7 +132,7 @@ export class ScenarioProps {
     });
     const sheet = new THREE.Mesh(sheetGeo, sheetMat);
     sheet.rotation.x = -Math.PI / 2;
-    sheet.position.set(3.7, 0.54, -3.5);
+    sheet.position.set(0.2, 0.54, 0);
     sheet.castShadow = true;
     bedGroup.add(sheet);
 
@@ -140,31 +141,31 @@ export class ScenarioProps {
     pillowGeo.scale(1, 0.35, 1.4);
     const pillowMat = new THREE.MeshStandardMaterial({ color: 0x706868, roughness: 0.7, emissive: 0x141010, emissiveIntensity: 0.2 });
     const pillow = new THREE.Mesh(pillowGeo, pillowMat);
-    pillow.position.set(2.65, 0.52, -3.5);
+    pillow.position.set(-0.85, 0.52, 0);
     pillow.castShadow = true;
     bedGroup.add(pillow);
 
     // Bedside lamp — small cylinder + sphere shade on a tiny table
     const lampBaseMat = new THREE.MeshStandardMaterial({ color: 0x686870, roughness: 0.3, metalness: 0.7, emissive: 0x101018, emissiveIntensity: 0.15 });
     // Nightstand
-    bedGroup.add(this._box(2.15, 0.25, -3.5, 0.35, 0.5, 0.35, darkMat));
+    bedGroup.add(this._box(-1.35, 0.25, 0, 0.35, 0.5, 0.35, darkMat));
     // Lamp base
-    bedGroup.add(this._cyl(2.15, 0.55, -3.5, 0.04, 0.05, 0.1, 8, lampBaseMat));
+    bedGroup.add(this._cyl(-1.35, 0.55, 0, 0.04, 0.05, 0.1, 8, lampBaseMat));
     // Lamp stem
-    bedGroup.add(this._cyl(2.15, 0.68, -3.5, 0.015, 0.015, 0.2, 6, lampBaseMat));
+    bedGroup.add(this._cyl(-1.35, 0.68, 0, 0.015, 0.015, 0.2, 6, lampBaseMat));
     // Lamp shade (emissive warm glow)
     const shadeMat = new THREE.MeshStandardMaterial({
       color: 0x705830, emissive: 0x604018, emissiveIntensity: 1.0, roughness: 0.6,
       side: THREE.DoubleSide, transparent: true, opacity: 0.9,
     });
     const shade = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.1, 8, 1, true), shadeMat);
-    shade.position.set(2.15, 0.78, -3.5);
+    shade.position.set(-1.35, 0.78, 0);
     shade.rotation.x = Math.PI;
     bedGroup.add(shade);
 
     // Warm lamp light
     const lampLight = new THREE.PointLight(0xffcc88, 2.0, 6, 1.2);
-    lampLight.position.set(2.15, 0.78, -3.5);
+    lampLight.position.set(-1.35, 0.78, 0);
     bedGroup.add(lampLight);
 
     this._props.bed = bedGroup;
@@ -339,19 +340,20 @@ export class ScenarioProps {
   // ---- RUBBLE WALL (search & rescue) ----
   _buildRubbleWall() {
     const rubbleGroup = new THREE.Group();
+    rubbleGroup.position.set(2, 0, 0);
     const rubbleMat = new THREE.MeshStandardMaterial({ color: 0x807868, roughness: 0.75, emissive: 0x181610, emissiveIntensity: 0.25 });
     const rebarMat = new THREE.MeshStandardMaterial({ color: 0x8a7858, roughness: 0.4, metalness: 0.7, emissive: 0x1a1408, emissiveIntensity: 0.2 });
 
     // Broken wall — main slab
-    rubbleGroup.add(this._box(2, 1, 0, 0.4, 2, 3, rubbleMat));
+    rubbleGroup.add(this._box(0, 1, 0, 0.4, 2, 3, rubbleMat));
 
     // Wall crack lines (thin dark boxes embedded in wall surface)
     const crackMat = new THREE.MeshStandardMaterial({ color: 0x403828, roughness: 0.9 });
     const cracks = [
-      [1.82, 1.4, -0.3, 0.01, 0.6, 0.02, 0.3],
-      [1.82, 0.8, 0.5, 0.01, 0.5, 0.02, -0.2],
-      [1.82, 1.6, 0.8, 0.01, 0.4, 0.02, 0.15],
-      [1.82, 0.5, -0.7, 0.01, 0.35, 0.02, -0.25],
+      [-0.18, 1.4, -0.3, 0.01, 0.6, 0.02, 0.3],
+      [-0.18, 0.8, 0.5, 0.01, 0.5, 0.02, -0.2],
+      [-0.18, 1.6, 0.8, 0.01, 0.4, 0.02, 0.15],
+      [-0.18, 0.5, -0.7, 0.01, 0.35, 0.02, -0.25],
     ];
     for (const [cx, cy, cz, cw, ch, cd, rot] of cracks) {
       const crack = this._box(cx, cy, cz, cw, ch, cd, crackMat);
@@ -361,10 +363,10 @@ export class ScenarioProps {
 
     // Rebar — thin metal cylinders protruding from the wall
     for (const [rx, ry, rz, rLen, rRot] of [
-      [1.6, 1.7, -0.4, 0.8, 0.3],
-      [1.5, 1.2, 0.6, 0.6, -0.2],
-      [1.7, 0.9, -0.8, 0.5, 0.5],
-      [1.55, 1.5, 1.0, 0.7, -0.4],
+      [-0.4, 1.7, -0.4, 0.8, 0.3],
+      [-0.5, 1.2, 0.6, 0.6, -0.2],
+      [-0.3, 0.9, -0.8, 0.5, 0.5],
+      [-0.45, 1.5, 1.0, 0.7, -0.4],
     ]) {
       const rebar = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, rLen, 6), rebarMat);
       rebar.position.set(rx, ry, rz);
@@ -383,7 +385,7 @@ export class ScenarioProps {
         emissive: 0x141210, emissiveIntensity: 0.2,
       });
       const piece = this._box(
-        1.3 + Math.random() * 1.4, s / 2, -1.5 + Math.random() * 3,
+        -0.7 + Math.random() * 1.4, s / 2, -1.5 + Math.random() * 3,
         s, s * (0.4 + Math.random() * 0.5), s * (0.6 + Math.random() * 0.4), rMat
       );
       piece.rotation.x = (Math.random() - 0.5) * 0.6;
@@ -397,7 +399,7 @@ export class ScenarioProps {
     const dustGeo = new THREE.BufferGeometry();
     const dustPositions = new Float32Array(dustCount * 3);
     for (let i = 0; i < dustCount; i++) {
-      dustPositions[i * 3]     = 1.0 + Math.random() * 2.0;
+      dustPositions[i * 3]     = -1.0 + Math.random() * 2.0;
       dustPositions[i * 3 + 1] = Math.random() * 2.5;
       dustPositions[i * 3 + 2] = -1.5 + Math.random() * 3.0;
     }
@@ -417,42 +419,43 @@ export class ScenarioProps {
   // ---- SCREEN / TV (gesture control) ----
   _buildScreen(metalMat) {
     const screenGroup = new THREE.Group();
+    screenGroup.position.set(0, 0, -4.7);
     const screenFrame = new THREE.MeshStandardMaterial({ color: 0x484850, roughness: 0.2, metalness: 0.7, emissive: 0x0c0c14, emissiveIntensity: 0.15 });
 
     // Frame
-    screenGroup.add(this._box(0, 1.5, -4.7, 1.8, 1.1, 0.06, screenFrame));
+    screenGroup.add(this._box(0, 1.5, 0, 1.8, 1.1, 0.06, screenFrame));
     // Screen surface (emissive, color shifts in update())
     const screenSurfMat = new THREE.MeshStandardMaterial({
       color: 0x1a3868, emissive: 0x1a3868, emissiveIntensity: 1.2, roughness: 0.1,
     });
     const screenSurf = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.9, 0.02), screenSurfMat);
-    screenSurf.position.set(0, 1.5, -4.66);
+    screenSurf.position.set(0, 1.5, 0.04);
     screenGroup.add(screenSurf);
     this._screenGlow = screenSurfMat;
 
     // Stand / mount — neck + base
-    screenGroup.add(this._box(0, 0.88, -4.7, 0.08, 0.16, 0.08, screenFrame));
-    screenGroup.add(this._box(0, 0.78, -4.7, 0.4, 0.03, 0.2, metalMat));
+    screenGroup.add(this._box(0, 0.88, 0, 0.08, 0.16, 0.08, screenFrame));
+    screenGroup.add(this._box(0, 0.78, 0, 0.4, 0.03, 0.2, metalMat));
 
     // Power LED indicator
     const ledMat = new THREE.MeshStandardMaterial({
       color: 0x00ff40, emissive: 0x00ff40, emissiveIntensity: 1.0,
     });
     const powerLed = new THREE.Mesh(new THREE.SphereGeometry(0.012, 6, 4), ledMat);
-    powerLed.position.set(0.82, 0.96, -4.66);
+    powerLed.position.set(0.82, 0.96, 0.04);
     screenGroup.add(powerLed);
     this._powerLed = ledMat;
 
     // Subtle screen glow (point light)
     const screenLight = new THREE.PointLight(0x4080e0, 1.5, 6);
-    screenLight.position.set(0, 1.5, -4.5);
+    screenLight.position.set(0, 1.5, 0.2);
     screenGroup.add(screenLight);
 
     // Media console below the screen
     const consoleMat = new THREE.MeshStandardMaterial({ color: 0x484858, roughness: 0.45, metalness: 0.5, emissive: 0x0c0c14, emissiveIntensity: 0.15 });
-    screenGroup.add(this._box(0, 0.55, -4.7, 1.2, 0.35, 0.35, consoleMat));
+    screenGroup.add(this._box(0, 0.55, 0, 1.2, 0.35, 0.35, consoleMat));
     // Console shelf divider
-    screenGroup.add(this._box(0, 0.55, -4.54, 1.1, 0.02, 0.01, metalMat));
+    screenGroup.add(this._box(0, 0.55, 0.16, 1.1, 0.02, 0.01, metalMat));
 
     this._props.screen = screenGroup;
     screenGroup.visible = false;
@@ -463,8 +466,9 @@ export class ScenarioProps {
   _buildDesks(darkMat, metalMat, accentMat) {
     // Desk 1 (left)
     const deskGroup = new THREE.Group();
-    deskGroup.add(this._box(-2, 0.38, -1, 1.2, 0.04, 0.6, darkMat));
-    for (const [lx, lz] of [[-2.55, -1.25], [-1.45, -1.25], [-2.55, -0.75], [-1.45, -0.75]]) {
+    deskGroup.position.set(-2, 0, -1);
+    deskGroup.add(this._box(0, 0.38, 0, 1.2, 0.04, 0.6, darkMat));
+    for (const [lx, lz] of [[-0.55, -0.25], [0.55, -0.25], [-0.55, 0.25], [0.55, 0.25]]) {
       deskGroup.add(this._box(lx, 0.19, lz, 0.04, 0.38, 0.04, darkMat));
     }
     // Monitor on desk 1
@@ -472,18 +476,18 @@ export class ScenarioProps {
     const monScreenMat = new THREE.MeshStandardMaterial({
       color: 0x183858, emissive: 0x183858, emissiveIntensity: 1.0, roughness: 0.1,
     });
-    deskGroup.add(this._box(-2, 0.62, -1.15, 0.5, 0.35, 0.03, monitorMat));
-    deskGroup.add(this._box(-2, 0.62, -1.13, 0.44, 0.29, 0.01, monScreenMat));
-    deskGroup.add(this._box(-2, 0.42, -1.1, 0.06, 0.04, 0.06, metalMat)); // stand neck
-    deskGroup.add(this._box(-2, 0.40, -1.05, 0.18, 0.01, 0.12, metalMat)); // stand base
+    deskGroup.add(this._box(0, 0.62, -0.15, 0.5, 0.35, 0.03, monitorMat));
+    deskGroup.add(this._box(0, 0.62, -0.13, 0.44, 0.29, 0.01, monScreenMat));
+    deskGroup.add(this._box(0, 0.42, -0.1, 0.06, 0.04, 0.06, metalMat)); // stand neck
+    deskGroup.add(this._box(0, 0.40, -0.05, 0.18, 0.01, 0.12, metalMat)); // stand base
     // Keyboard outline
-    deskGroup.add(this._box(-2, 0.405, -0.85, 0.35, 0.008, 0.12, accentMat));
+    deskGroup.add(this._box(0, 0.405, 0.15, 0.35, 0.008, 0.12, accentMat));
     // Office chair at desk 1
-    this._buildOfficeChair(deskGroup, -2, -0.55, darkMat, metalMat);
+    this._buildOfficeChair(deskGroup, 0, 0.45, darkMat, metalMat);
 
     // Monitor glow light
     const monLight = new THREE.PointLight(0x4080e0, 1.2, 4);
-    monLight.position.set(-2, 0.7, -1.0);
+    monLight.position.set(0, 0.7, 0.0);
     deskGroup.add(monLight);
 
     this._props.desk = deskGroup;
@@ -492,26 +496,27 @@ export class ScenarioProps {
 
     // Desk 2 (right)
     const desk2Group = new THREE.Group();
-    desk2Group.add(this._box(2, 0.38, 1, 1.0, 0.04, 0.6, darkMat));
-    for (const [lx, lz] of [[1.45, 0.75], [2.55, 0.75], [1.45, 1.25], [2.55, 1.25]]) {
+    desk2Group.position.set(2, 0, 1);
+    desk2Group.add(this._box(0, 0.38, 0, 1.0, 0.04, 0.6, darkMat));
+    for (const [lx, lz] of [[-0.55, -0.25], [0.55, -0.25], [-0.55, 0.25], [0.55, 0.25]]) {
       desk2Group.add(this._box(lx, 0.19, lz, 0.04, 0.38, 0.04, darkMat));
     }
     // Monitor on desk 2
-    desk2Group.add(this._box(2, 0.62, 1.15, 0.5, 0.35, 0.03, monitorMat));
-    desk2Group.add(this._box(2, 0.62, 1.17, 0.44, 0.29, 0.01, monScreenMat));
-    desk2Group.add(this._box(2, 0.42, 1.1, 0.06, 0.04, 0.06, metalMat));
-    desk2Group.add(this._box(2, 0.40, 1.05, 0.18, 0.01, 0.12, metalMat));
+    desk2Group.add(this._box(0, 0.62, 0.15, 0.5, 0.35, 0.03, monitorMat));
+    desk2Group.add(this._box(0, 0.62, 0.17, 0.44, 0.29, 0.01, monScreenMat));
+    desk2Group.add(this._box(0, 0.42, 0.1, 0.06, 0.04, 0.06, metalMat));
+    desk2Group.add(this._box(0, 0.40, 0.05, 0.18, 0.01, 0.12, metalMat));
     // Keyboard
-    desk2Group.add(this._box(2, 0.405, 0.85, 0.35, 0.008, 0.12, accentMat));
+    desk2Group.add(this._box(0, 0.405, -0.15, 0.35, 0.008, 0.12, accentMat));
     // Office chair at desk 2
-    this._buildOfficeChair(desk2Group, 2, 0.55, darkMat, metalMat);
+    this._buildOfficeChair(desk2Group, 0, -0.45, darkMat, metalMat);
 
     // Water cooler / plant between desks area
     const plantMat = new THREE.MeshStandardMaterial({ color: 0x2a7838, roughness: 0.7, emissive: 0x0c2810, emissiveIntensity: 0.3 });
     const potMat = new THREE.MeshStandardMaterial({ color: 0x706858, roughness: 0.6, emissive: 0x14120c, emissiveIntensity: 0.15 });
-    desk2Group.add(this._cyl(3.2, 0.15, 0, 0.12, 0.1, 0.3, 8, potMat));
+    desk2Group.add(this._cyl(1.2, 0.15, -1.0, 0.12, 0.1, 0.3, 8, potMat));
     // Foliage — cluster of small spheres
-    for (const [fx, fy, fz] of [[3.2, 0.45, 0], [3.15, 0.4, 0.06], [3.25, 0.42, -0.05]]) {
+    for (const [fx, fy, fz] of [[1.2, 0.45, -1.0], [1.15, 0.4, -0.94], [1.25, 0.42, -1.05]]) {
       const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 5), plantMat);
       leaf.position.set(fx, fy, fz);
       desk2Group.add(leaf);
@@ -519,7 +524,7 @@ export class ScenarioProps {
 
     // Monitor glow light
     const monLight2 = new THREE.PointLight(0x4080e0, 1.2, 4);
-    monLight2.position.set(2, 0.7, 1.0);
+    monLight2.position.set(0, 0.7, 0.0);
     desk2Group.add(monLight2);
 
     this._props.desk2 = desk2Group;
@@ -735,5 +740,34 @@ export class ScenarioProps {
       }
       dPos.needsUpdate = true;
     }
+  }
+
+  /**
+   * Position and orient a prop dynamically based on coordinates (ADR-139).
+   */
+  positionProp(name, x, y, z, rotationY = 0) {
+    const prop = this._props[name];
+    if (prop) {
+      prop.position.set(x, y !== undefined ? y : prop.position.y, z);
+      if (rotationY !== undefined) {
+        prop.rotation.y = rotationY;
+      }
+    }
+  }
+
+  /**
+   * Reset all props back to their default hardcoded positions.
+   */
+  resetProps() {
+    this.positionProp('bed', 3.5, 0, -3.5, 0);
+    this.positionProp('chair', 1.0, 0, -1.5, 0);
+    this.positionProp('exerciseMat', 0, 0, 0, 0);
+    this.positionProp('door', -5.5, 0, -1, 0);
+    this.positionProp('rubbleWall', 2, 0, 0, 0);
+    this.positionProp('screen', 0, 0, -4.7, 0);
+    this.positionProp('desk', -2, 0, -1, 0);
+    this.positionProp('desk2', 2, 0, 1, 0);
+    this.positionProp('camera1', 5, 3.5, -4.5, 0);
+    this.positionProp('camera2', -5, 3.5, 4.5, 0);
   }
 }

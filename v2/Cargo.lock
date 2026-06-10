@@ -7457,7 +7457,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "753a07254fa68db183949ec6c7575d890da4d42404afabc11d610a720fcf570c"
 
 [[package]]
-name = "ruview-swarm"
+name = "aethersense-swarm"
 version = "0.1.0"
 dependencies = [
  "async-trait",

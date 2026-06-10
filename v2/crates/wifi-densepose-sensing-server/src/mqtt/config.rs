@@ -289,11 +289,11 @@ mod tests {
 
     #[test]
     fn password_env_resolution() {
-        std::env::set_var("RUVIEW_TEST_MQTT_PW", "s3cret");
+        std::env::set_var("AETHERSENSE_TEST_MQTT_PW", "s3cret");
         let cfg = MqttConfig::from_args(&parse(&[
-            "--mqtt-password-env", "RUVIEW_TEST_MQTT_PW",
+            "--mqtt-password-env", "AETHERSENSE_TEST_MQTT_PW",
         ]));
         assert_eq!(cfg.password.as_deref(), Some("s3cret"));
-        std::env::remove_var("RUVIEW_TEST_MQTT_PW");
+        std::env::remove_var("AETHERSENSE_TEST_MQTT_PW");
     }
 }

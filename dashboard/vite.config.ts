@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 // Dashboard for ADR-092 — Vite + Lit + WASM in a Web Worker.
-// Hosted at /RuView/nvsim/ on GitHub Pages; base path is configurable
+// Hosted at /AetherSense/nvsim/ on GitHub Pages; base path is configurable
 // via NVSIM_BASE so local dev (npm run dev) stays at "/".
 const base = (globalThis as { process?: { env?: { NVSIM_BASE?: string } } }).process?.env?.NVSIM_BASE ?? '/';
 

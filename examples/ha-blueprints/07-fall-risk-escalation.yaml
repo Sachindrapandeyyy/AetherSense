@@ -1,5 +1,5 @@
 blueprint:
-  name: RuView — escalate on fall-risk score crossing
+  name: AetherSense — escalate on fall-risk score crossing
   description: >
     Send a notification when the fall_risk_elevated sensor crosses a
     configurable threshold (default 70) — the resident's near-fall
@@ -7,7 +7,7 @@ blueprint:
     investigating. Pairs with the longer-term ADR-079 P9 personalisation
     flow once available. Part of the ADR-115 §3.12 starter blueprint set.
   domain: automation
-  source_url: https://github.com/ruvnet/RuView/blob/main/examples/ha-blueprints/07-fall-risk-escalation.yaml
+  source_url: https://github.com/ruvnet/AetherSense/blob/main/examples/ha-blueprints/07-fall-risk-escalation.yaml
   input:
     fall_risk_entity:
       name: Fall risk elevated sensor (0-100 score)

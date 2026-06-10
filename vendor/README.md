@@ -21,7 +21,7 @@ git submodule update --init --recursive
 Or clone with submodules in one step:
 
 ```bash
-git clone --recurse-submodules https://github.com/ruvnet/RuView.git
+git clone --recurse-submodules https://github.com/ruvnet/AetherSense.git
 ```
 
 ## Update to latest upstream

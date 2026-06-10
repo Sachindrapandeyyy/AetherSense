@@ -1,8 +1,8 @@
 /* Ghost Murmur — research view.
  *
  * Walks through the publicly-reported April 2026 CIA program and maps
- * the physically-defensible parts onto RuView's three-tier heartbeat
- * mesh. Source: docs/research/quantum-sensing/16-ghost-murmur-ruview-spec.md
+ * the physically-defensible parts onto AetherSense's three-tier heartbeat
+ * mesh. Source: docs/research/quantum-sensing/16-ghost-murmur-aethersense-spec.md
  *
  * This view is reference material, not an operational mode. It exists
  * so practitioners (and journalists) can audit the physics-vs-press
@@ -472,18 +472,18 @@ export class NvGhostMurmur extends LitElement {
       <h1>Ghost Murmur — open-source reality check</h1>
       <div class="subtitle">
         The physics-vs-press audit for the publicly-reported April 2026
-        CIA NV-diamond heartbeat detector, and how RuView's existing
+        CIA NV-diamond heartbeat detector, and how AetherSense's existing
         stack maps onto an honest, civilian version of the same idea.
       </div>
 
       <div class="links">
-        <a href="https://github.com/ruvnet/RuView/blob/feat/nvsim-pipeline-simulator/docs/research/quantum-sensing/16-ghost-murmur-ruview-spec.md" target="_blank" rel="noopener">
+        <a href="https://github.com/ruvnet/AetherSense/blob/feat/nvsim-pipeline-simulator/docs/research/quantum-sensing/16-ghost-murmur-aethersense-spec.md" target="_blank" rel="noopener">
           📄 Full spec (583 lines)
         </a>
         <a href="https://gist.github.com/ruvnet/e44d0c3f0ad10d9c4933a196a16d405c" target="_blank" rel="noopener">
           ✦ Public gist
         </a>
-        <a href="https://github.com/ruvnet/RuView/issues/437" target="_blank" rel="noopener">
+        <a href="https://github.com/ruvnet/AetherSense/issues/437" target="_blank" rel="noopener">
           # Issue #437
         </a>
         <a href="https://www.scientificamerican.com/article/what-is-the-quantum-ghost-murmur-purportedly-used-in-iran-scientists/" target="_blank" rel="noopener">
@@ -535,7 +535,7 @@ export class NvGhostMurmur extends LitElement {
         </p>
       </div>
 
-      <h2>RuView's three-tier mesh — what is actually buildable</h2>
+      <h2>AetherSense's three-tier mesh — what is actually buildable</h2>
       <div class="architecture">                      ┌──────────────────────────┐
                       │   Tier 3 — NV-diamond    │  Range: 0.1–2 m (lab)
                       │     magnetometer ring    │  Status: nvsim simulator only
@@ -562,11 +562,11 @@ export class NvGhostMurmur extends LitElement {
                   │   + Cramer-Rao gating          │
                   └────────────────────────────────┘</div>
 
-      <h2>Press claim → RuView equivalent</h2>
+      <h2>Press claim → AetherSense equivalent</h2>
       <div class="card" style="padding: 6px 14px;">
         <table>
           <thead>
-            <tr><th>Press claim</th><th>RuView equivalent today</th><th>Crate / ADR</th><th>Honest range</th></tr>
+            <tr><th>Press claim</th><th>AetherSense equivalent today</th><th>Crate / ADR</th><th>Honest range</th></tr>
           </thead>
           <tbody>
             <tr>
@@ -641,10 +641,10 @@ export class NvGhostMurmur extends LitElement {
           <li><b>Data minimisation</b> — fused output is <code>(presence, HR, BR, pose, p_alive)</code>; raw streams discarded at the edge.</li>
           <li><b>PII gates</b> (ADR-040) block identifying biometric streams from leaving the local mesh without consent.</li>
           <li><b>Adversarial-signal detection</b> flags physically-impossible signal patterns from compromised mesh nodes.</li>
-          <li><b>No export-controlled hardware</b> — RuView targets &lt; $50 COTS. ITAR/EAR sub-THz coherent radars and shielded NV ensembles are out of scope.</li>
+          <li><b>No export-controlled hardware</b> — AetherSense targets &lt; $50 COTS. ITAR/EAR sub-THz coherent radars and shielded NV ensembles are out of scope.</li>
         </ul>
         <p style="font-size: 11.5px; color: var(--ink-3); margin: 10px 0 0;">
-          RuView is not affiliated with the United States government, the CIA, Lockheed Martin,
+          AetherSense is not affiliated with the United States government, the CIA, Lockheed Martin,
           or any classified program. References to "Ghost Murmur" in this view refer
           exclusively to the publicly-reported program of that name as covered in the open
           press in April 2026.

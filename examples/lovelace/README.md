@@ -1,22 +1,22 @@
-# RuView Lovelace dashboards
+# AetherSense Lovelace dashboards
 
 Drop-in Lovelace dashboard YAMLs for three common deployment shapes.
 Paste the contents of any file into HA's **Lovelace raw config editor**
 (Settings → Dashboards → ⋮ → Edit dashboard → ⋮ → Raw config editor)
-and edit the `binary_sensor.ruview_<room>_*` entity IDs to match what
-HA auto-discovered from your RuView nodes.
+and edit the `binary_sensor.aethersense_<room>_*` entity IDs to match what
+HA auto-discovered from your AetherSense nodes.
 
 | # | View                              | When to use                            |
 |---|-----------------------------------|----------------------------------------|
-| 1 | [Single-room overview](01-single-room-overview.yaml) | One RuView node, full 21-entity surface |
-| 2 | [Multi-node grid](02-multi-node-grid.yaml)            | 3+ RuView nodes (whole-house deploy)    |
+| 1 | [Single-room overview](01-single-room-overview.yaml) | One AetherSense node, full 21-entity surface |
+| 2 | [Multi-node grid](02-multi-node-grid.yaml)            | 3+ AetherSense nodes (whole-house deploy)    |
 | 3 | [Healthcare / AAL view](03-healthcare-aal-view.yaml)  | Care-giver dashboard; **privacy-mode-safe** (no biometrics shown) |
 
 ## Renaming entities
 
-RuView's MQTT auto-discovery generates entity IDs from the node's MAC
-address by default (`binary_sensor.ruview_aabbccddeeff_presence`).
-To get friendly names like `binary_sensor.ruview_bedroom_presence`,
+AetherSense's MQTT auto-discovery generates entity IDs from the node's MAC
+address by default (`binary_sensor.aethersense_aabbccddeeff_presence`).
+To get friendly names like `binary_sensor.aethersense_bedroom_presence`,
 either:
 
 1. **Rename in HA** — open the entity, click the settings cog, change

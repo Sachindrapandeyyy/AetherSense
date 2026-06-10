@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RuView UI - Unit Tests</title>
+  <title>AetherSense UI - Unit Tests</title>
   <style>
     * { margin: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #1a1a2e; color: #e0e0e0; padding: 24px; }
@@ -21,7 +21,7 @@
   </style>
 </head>
 <body>
-  <h1>RuView UI - Unit Tests</h1>
+  <h1>AetherSense UI - Unit Tests</h1>
   <p class="subtitle">Tests for UI components and utility modules</p>
   <div id="output"></div>
   <div id="summary" class="summary"></div>
@@ -190,7 +190,7 @@
         expect(tt.getSavedTheme()).toBe('dark');
         tt.saveTheme('light');
         expect(tt.getSavedTheme()).toBe('light');
-        localStorage.removeItem('ruview-theme');
+        localStorage.removeItem('aethersense-theme');
       });
 
       dom.remove();

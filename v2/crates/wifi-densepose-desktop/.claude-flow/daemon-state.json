@@ -59,8 +59,8 @@
   },
   "config": {
     "autoStart": false,
-    "logDir": "/Users/cohen/GitHub/ruvnet/RuView/v2/crates/wifi-densepose-desktop/.claude-flow/logs",
-    "stateFile": "/Users/cohen/GitHub/ruvnet/RuView/v2/crates/wifi-densepose-desktop/.claude-flow/daemon-state.json",
+    "logDir": "/Users/cohen/GitHub/ruvnet/AetherSense/v2/crates/wifi-densepose-desktop/.claude-flow/logs",
+    "stateFile": "/Users/cohen/GitHub/ruvnet/AetherSense/v2/crates/wifi-densepose-desktop/.claude-flow/daemon-state.json",
     "maxConcurrent": 2,
     "workerTimeoutMs": 300000,
     "resourceThresholds": {

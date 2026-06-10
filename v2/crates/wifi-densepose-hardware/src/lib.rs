@@ -47,14 +47,16 @@ pub mod sync_packet;
 // coordinator-node Rust code drive the controller stack without
 // touching any downstream signal/ruvector/train/mat crate.
 pub mod radio_ops;
+pub mod scheduler;
 
 pub use bridge::CsiData;
 pub use csi_frame::{AntennaConfig, Bandwidth, CsiFrame, CsiMetadata, SubcarrierData};
 pub use error::ParseError;
+pub use scheduler::{TdmConfig, TdmScheduler, SlotAssignment, SCAN_CHANNELS};
 pub use esp32_parser::{
-    ruview_sibling_packet_name, Esp32CsiParser, ESP32_CSI_MAGIC, RUVIEW_COMPRESSED_CSI_MAGIC,
-    RUVIEW_FEATURE_MAGIC, RUVIEW_FEATURE_STATE_MAGIC, RUVIEW_FUSED_VITALS_MAGIC,
-    RUVIEW_TEMPORAL_MAGIC, RUVIEW_VITALS_MAGIC,
+    aethersense_sibling_packet_name, Esp32CsiParser, ESP32_CSI_MAGIC, AETHERSENSE_COMPRESSED_CSI_MAGIC,
+    AETHERSENSE_FEATURE_MAGIC, AETHERSENSE_FEATURE_STATE_MAGIC, AETHERSENSE_FUSED_VITALS_MAGIC,
+    AETHERSENSE_TEMPORAL_MAGIC, AETHERSENSE_VITALS_MAGIC,
 };
 pub use sync_packet::{
     SyncPacket, SyncPacketFlags, SYNC_PACKET_MAGIC, SYNC_PACKET_SIZE, SYNC_PACKET_PROTO_VER,

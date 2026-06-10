@@ -1,16 +1,16 @@
 blueprint:
-  name: RuView — auto-arm security when room not active
+  name: AetherSense — auto-arm security when room not active
   description: >
     Auto-arm the home alarm when room_active flips to OFF for all
     monitored rooms AND no_movement is ON in the primary room. Lets the
     home self-protect without requiring user input at the door.
     Part of the ADR-115 §3.12 starter blueprint set.
   domain: automation
-  source_url: https://github.com/ruvnet/RuView/blob/main/examples/ha-blueprints/08-auto-arm-security-when-not-active.yaml
+  source_url: https://github.com/ruvnet/AetherSense/blob/main/examples/ha-blueprints/08-auto-arm-security-when-not-active.yaml
   input:
     room_active_group:
       name: Group of room_active binary_sensors (one per room)
-      description: A `group.*` entity containing every RuView room_active sensor.
+      description: A `group.*` entity containing every AetherSense room_active sensor.
       selector:
         entity:
           domain: group

@@ -177,12 +177,12 @@ export class I18n {
   }
 
   getSavedLocale() {
-    try { return localStorage.getItem('ruview-locale'); }
+    try { return localStorage.getItem('aethersense-locale'); }
     catch { return null; }
   }
 
   saveLocale(locale) {
-    try { localStorage.setItem('ruview-locale', locale); }
+    try { localStorage.setItem('aethersense-locale', locale); }
     catch { /* noop */ }
   }
 

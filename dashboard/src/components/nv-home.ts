@@ -263,7 +263,7 @@ export class NvHome extends LitElement {
         New here? <a @click=${() => this.go('tour')}>Take the 60-second guided tour</a>
         — every panel is explained. Or press <code>?</code> for the help center
         (quickstart, glossary, FAQ, shortcuts) any time.<br>
-        Open source · Apache-2.0 OR MIT · <code>github.com/ruvnet/RuView</code>
+        Open source · Apache-2.0 OR MIT · <code>github.com/ruvnet/AetherSense</code>
       </p>
     `;
   }

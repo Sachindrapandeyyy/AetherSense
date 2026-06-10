@@ -1,4 +1,4 @@
-// WiFi DensePose Application - Main Entry Point
+// AetherSense Application - Main Entry Point
 
 import { TabManager } from './components/TabManager.js';
 import { DashboardTab } from './components/DashboardTab.js';
@@ -38,7 +38,7 @@ class WiFiDensePoseApp {
   // Initialize application
   async init() {
     try {
-      console.log('Initializing WiFi DensePose UI...');
+      console.log('Initializing AetherSense UI...');
       
       // Set up error handling
       this.setupErrorHandling();
@@ -56,7 +56,7 @@ class WiFiDensePoseApp {
       this.setupEventListeners();
 
       this.isInitialized = true;
-      console.log('WiFi DensePose UI initialized successfully');
+      console.log('AetherSense UI initialized successfully');
       
     } catch (error) {
       console.error('Failed to initialize application:', error);

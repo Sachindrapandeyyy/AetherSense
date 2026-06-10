@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>RuView — Camera + WiFi CSI Point Cloud</title>
+    <title>AetherSense — Camera + WiFi CSI Point Cloud</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta name="ruview-viewer-version" content="0.2.0-face-mesh">
+    <meta name="aethersense-viewer-version" content="0.2.0-face-mesh">
     <!-- Inline amber-dot favicon avoids a stray /favicon.ico 404 in the console. -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='10' fill='%23e8a634'/></svg>">
     <style>
@@ -30,12 +30,12 @@
 </head>
 <body>
     <div id="info">
-        <h3 style="margin:0 0 4px 0">RuView · Seldon Vault</h3>
+        <h3 style="margin:0 0 4px 0">AetherSense · Seldon Vault</h3>
         <div style="font-size: 11px; color: #888; margin-bottom: 8px; max-width: 240px; line-height: 1.4; font-style: italic;">"Psychohistory deals with reactions of human conglomerates to fixed social and economic stimuli." — Hari Seldon</div>
         <div id="stats">Loading...</div>
     </div>
     <button id="cam-cta">▶ Project Subject — render your face into the Vault</button>
-    <button id="esp-cta" title="Stream live CSI from a local ruview-pointcloud serve instance (e.g. http://127.0.0.1:9880)">📡 Connect ESP32…</button>
+    <button id="esp-cta" title="Stream live CSI from a local aethersense-pointcloud serve instance (e.g. http://127.0.0.1:9880)">📡 Connect ESP32…</button>
     <script>
         var scene = new THREE.Scene();
         scene.background = new THREE.Color(0x0a0a0a);
@@ -137,7 +137,7 @@
         var faceMeshState = "idle"; // "idle" | "starting" | "running" | "denied" | "unavailable"
 
         // ----- MediaPipe Face Mesh (browser equivalent of camera-depth backprojection) -----
-        // Locally, ruview-pointcloud serve fuses real camera depth + WiFi CSI. In the
+        // Locally, aethersense-pointcloud serve fuses real camera depth + WiFi CSI. In the
         // browser we don't have depth from a webcam, but Face Mesh produces 468
         // 3D landmarks (x,y in [0,1], z roughly in [-0.5,0.5]) at ~30 fps — enough to
         // reproduce the "I can see the outline of my face in points" experience. The
@@ -697,7 +697,7 @@
             });
         })();
 
-        // Wire the ESP32 backend CTA: prompts for a ruview-pointcloud serve URL,
+        // Wire the ESP32 backend CTA: prompts for a aethersense-pointcloud serve URL,
         // persists last-used value in localStorage, and reloads with the
         // ?backend=<url> query so the existing remote-mode path takes over.
         // Disconnect by clicking again when already connected.
@@ -718,15 +718,15 @@
                     return;
                 }
                 var stored;
-                try { stored = localStorage.getItem("ruview.backendUrl"); } catch (_) { stored = null; }
+                try { stored = localStorage.getItem("aethersense.backendUrl"); } catch (_) { stored = null; }
                 var def = stored || "http://127.0.0.1:9880";
                 var url = window.prompt(
-                    "Enter the ruview-pointcloud serve URL (run `ruview-pointcloud serve` locally with your ESP32 streaming CSI to UDP port 3333):",
+                    "Enter the aethersense-pointcloud serve URL (run `aethersense-pointcloud serve` locally with your ESP32 streaming CSI to UDP port 3333):",
                     def
                 );
                 if (!url) return;
                 url = url.replace(/\/+$/, "");
-                try { localStorage.setItem("ruview.backendUrl", url); } catch (_) {}
+                try { localStorage.setItem("aethersense.backendUrl", url); } catch (_) {}
                 var u2 = new URL(window.location.href);
                 u2.searchParams.set("backend", url);
                 window.location.href = u2.toString();

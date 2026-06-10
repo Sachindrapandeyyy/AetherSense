@@ -16,7 +16,7 @@ impl TileCache {
     }
 
     pub fn default_cache() -> Self {
-        Self::new("~/.local/share/ruview/geo-cache")
+        Self::new("~/.local/share/aethersense/geo-cache")
     }
 
     pub fn get(&self, key: &str) -> Option<Vec<u8>> {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RuView · Cinematic · ADR-097 helpers + pseudo-CSI visualization</title>
+    <title>AetherSense · Cinematic · ADR-097 helpers + pseudo-CSI visualization</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='10' fill='%23e8a634'/></svg>">
     <style>
         :root {
@@ -164,7 +164,7 @@
     <div class="scan-flash" id="scan-flash"></div>
 
     <div class="panel" id="info">
-        <h1>RuView · Cinematic</h1>
+        <h1>AetherSense · Cinematic</h1>
         <div class="sub">ADR-097 · pseudo-CSI visualization layer</div>
         <div class="row"><span class="k">Subject</span><span class="v amber">● Tracked</span></div>
         <div class="row"><span class="k">Pose</span><span class="v" id="pose-state">walking</span></div>
@@ -198,7 +198,7 @@
     </div>
 
     <div id="titlecard">
-        RuView · Seldon Vault
+        AetherSense · Seldon Vault
         <div class="sub">multistatic wifi pose · ADR-097</div>
     </div>
 
@@ -208,7 +208,7 @@
 
     <script>
         // =====================================================================
-        //  RuView · Cinematic · ADR-097 helpers + pseudo-CSI visualization
+        //  AetherSense · Cinematic · ADR-097 helpers + pseudo-CSI visualization
         //  --------------------------------------------------------------------
         //  Layers on top of helpers-demo.html. Same coordinate system, same
         //  helpers from ADR-097, but with:
@@ -684,7 +684,7 @@
         // ---------------------------------------------------------------------
         //  Pseudo-CSI driver — synthetic per-node amplitude/coherence/doppler
         // ---------------------------------------------------------------------
-        //  Real RuView CSI: 64 subcarriers × N antennas × M nodes, fused into
+        //  Real AetherSense CSI: 64 subcarriers × N antennas × M nodes, fused into
         //  a scalar "amplitude" per (node, target). Here we synthesize a
         //  plausible scalar:
         //    amp_n = 1 / (1 + r²/k) + sin(walk_phase)*Doppler + N(0, σ)

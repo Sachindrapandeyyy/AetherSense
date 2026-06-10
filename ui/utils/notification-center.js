@@ -9,7 +9,7 @@ export class NotificationCenter {
     this.maxNotifications = 50;
     this.isOpen = false;
     this.unreadCount = 0;
-    this.storageKey = 'ruview-notifications';
+    this.storageKey = 'aethersense-notifications';
   }
 
   init() {

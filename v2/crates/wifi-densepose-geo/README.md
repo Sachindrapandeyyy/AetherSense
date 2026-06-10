@@ -1,6 +1,6 @@
 # wifi-densepose-geo — Geospatial Satellite Integration
 
-Free satellite imagery, terrain elevation, and map data for RuView spatial sensing. No API keys required.
+Free satellite imagery, terrain elevation, and map data for AetherSense spatial sensing. No API keys required.
 
 ## What It Does
 
@@ -31,7 +31,7 @@ Integrates your local sensor data (camera + WiFi CSI point cloud) with geographi
 | `types.rs` | 140 | GeoPoint, GeoBBox, TileCoord, ElevationGrid, OsmFeature |
 | `coord.rs` | 80 | WGS84/ENU transforms, tile math, haversine distance |
 | `locate.rs` | 45 | IP geolocation with caching |
-| `cache.rs` | 55 | Disk cache (`~/.local/share/ruview/geo-cache/`) |
+| `cache.rs` | 55 | Disk cache (`~/.local/share/aethersense/geo-cache/`) |
 | `tiles.rs` | 80 | Sentinel-2/ESRI/OSM tile fetcher |
 | `terrain.rs` | 100 | SRTM HGT parser, elevation lookup |
 | `osm.rs` | 150 | Overpass API client, building/road extraction |
@@ -102,4 +102,4 @@ IP Geolocation ──→ (lat, lon)
 
 ## License
 
-MIT (same as RuView)
+MIT (same as AetherSense)

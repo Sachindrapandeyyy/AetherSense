@@ -6,7 +6,7 @@
 | **Date** | 2026-05-28 |
 | **Deciders** | ruv |
 | **Codebase target** | `wifi-densepose-signal` (`ruvsense/multistatic.rs` — `fuse`, `attention_weighted_fusion`); `wifi-densepose-ruvector` (`viewpoint/fusion.rs` — `MultistaticArray`); `wifi-densepose-bfld` (`event.rs`) |
-| **Relates to** | ADR-029 (RuvSense Multistatic), ADR-031 (RuView Sensing-First RF Mode), ADR-118 (BFLD Beamforming Feedback Layer), ADR-134 (CSI→CIR Time-Domain Multipath), ADR-135 (Empty-Room Baseline Calibration), ADR-136 (RuView Rust Streaming Engine), ADR-138 (WiFi-7 MLO LinkGroup / ArrayCoordinator Clock-Quality Gating) |
+| **Relates to** | ADR-029 (RuvSense Multistatic), ADR-031 (AetherSense Sensing-First RF Mode), ADR-118 (BFLD Beamforming Feedback Layer), ADR-134 (CSI→CIR Time-Domain Multipath), ADR-135 (Empty-Room Baseline Calibration), ADR-136 (AetherSense Rust Streaming Engine), ADR-138 (WiFi-7 MLO LinkGroup / ArrayCoordinator Clock-Quality Gating) |
 
 ---
 
@@ -125,7 +125,7 @@ pub struct CalibrationId(pub u64);
 `QualityScore` deliberately mirrors the shape of the `QualityScored` trait introduced in ADR-136 (the streaming-engine frame contract). It implements that trait so the streaming engine can pull a uniform quality view off any stage:
 
 ```rust
-/// Defined in ADR-136 (`ruview-streaming-engine`); re-stated here for the
+/// Defined in ADR-136 (`aethersense-streaming-engine`); re-stated here for the
 /// `impl`.  A stage that produces quality-scored output implements this so
 /// the engine can route, gate, and log on quality uniformly.
 pub trait QualityScored {
@@ -459,7 +459,7 @@ Rejected. `ViewpointFusionEvent` (viewpoint/fusion.rs lines 183–219) is an int
 | ADR-118 (BFLD Beamforming Feedback Layer) | **Consumer**: the BFLD emitter reads `contradiction_flags` to demote `privacy_class`; reuses `PrivacyClass`, `PrivacyGate::demote`, and `BfldEvent::apply_privacy_gating` |
 | ADR-134 (CSI→CIR) | **Evidence source + witness chain**: `EvidenceRef::CirDominantTapRatio` records `Cir::dominant_tap_ratio`; the contradiction witness record uses the ADR-134 `verify.py` proof schema |
 | ADR-135 (Empty-Room Baseline Calibration) | **Prerequisite**: `CalibratedFrame.calibration_id` / `norm_gain` / `norm_phase_offset` come from `BaselineCalibration`; `CalibrationIdMismatch` and `DriftProfileConflict` are defined against ADR-135 calibration and drift_score |
-| ADR-136 (RuView Streaming Engine) | **Contract**: `QualityScore` implements ADR-136's `QualityScored` trait so the streaming engine routes/gates uniformly on fusion quality |
+| ADR-136 (AetherSense Streaming Engine) | **Contract**: `QualityScore` implements ADR-136's `QualityScored` trait so the streaming engine routes/gates uniformly on fusion quality |
 | ADR-138 (LinkGroup / ArrayCoordinator Clock-Quality Gating) | **Refines contradiction sensitivity**: ArrayCoordinator clock quality informs the `soft_guard_ns` threshold so `TimestampMismatch` flags fire on genuinely degraded clocks, not on healthy WiFi-7 MLO arrays |
 
 ---

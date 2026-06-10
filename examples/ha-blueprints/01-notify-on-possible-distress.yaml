@@ -1,17 +1,17 @@
 blueprint:
-  name: RuView — notify on possible distress
+  name: AetherSense — notify on possible distress
   description: >
-    Send a push notification when RuView's HA-MIND inference layer
+    Send a push notification when AetherSense's HA-MIND inference layer
     detects sustained elevated heart rate + agitated motion without a
     fall (possible_distress primitive). Includes the explainability
     reason payload so the recipient knows why the alert fired.
     Part of the ADR-115 §3.12 starter blueprint set.
   domain: automation
-  source_url: https://github.com/ruvnet/RuView/blob/main/examples/ha-blueprints/01-notify-on-possible-distress.yaml
+  source_url: https://github.com/ruvnet/AetherSense/blob/main/examples/ha-blueprints/01-notify-on-possible-distress.yaml
   input:
     distress_entity:
       name: Possible distress binary_sensor
-      description: The `binary_sensor.*_possible_distress` entity published by RuView.
+      description: The `binary_sensor.*_possible_distress` entity published by AetherSense.
       selector:
         entity:
           domain: binary_sensor
@@ -44,7 +44,7 @@ action:
     data:
       title: "⚠️ Possible distress detected"
       message: >
-        RuView flagged sustained elevated heart rate + agitated motion in
+        AetherSense flagged sustained elevated heart rate + agitated motion in
         {{ state_attr(trigger.entity_id, 'friendly_name') or trigger.entity_id }}.
         Reason: {{ state_attr(trigger.entity_id, 'reason') or 'none provided' }}.
   - delay:

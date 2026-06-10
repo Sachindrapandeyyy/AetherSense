@@ -158,7 +158,7 @@ const App: React.FC = () => {
                     lineHeight: 1.2,
                   }}
                 >
-                  RuView
+                  AetherSense
                 </h1>
                 <span
                   style={{

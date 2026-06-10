@@ -52,7 +52,7 @@ let runTransient!: (sceneJson: string, configJson: string, seed: number, nSample
 async function loadPkg(base: string): Promise<void> {
   // `base` is the dashboard's BASE_URL injected by Vite, prefixed with the
   // origin so we get an absolute URL the dynamic import can resolve. In dev
-  // this is "/", in prod under GitHub Pages it's "/RuView/nvsim/".
+  // this is "/", in prod under GitHub Pages it's "/AetherSense/nvsim/".
   const absoluteBase = new URL(base, ws.location.origin).href;
   const pkgUrl = new URL('nvsim-pkg/nvsim.js', absoluteBase).href;
   const pkg = (await import(/* @vite-ignore */ pkgUrl)) as NvsimPkg;

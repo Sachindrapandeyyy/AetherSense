@@ -1,16 +1,16 @@
 blueprint:
-  name: RuView — dim hallway when someone sleeping
+  name: AetherSense — dim hallway when someone sleeping
   description: >
     Drop hallway lights to a configurable brightness when anyone in the
     bedroom is in the someone_sleeping state. A midnight bathroom trip
     doesn't blast full lights. Restores when sleeping flips off.
     Part of the ADR-115 §3.12 starter blueprint set.
   domain: automation
-  source_url: https://github.com/ruvnet/RuView/blob/main/examples/ha-blueprints/02-dim-hallway-when-sleeping.yaml
+  source_url: https://github.com/ruvnet/AetherSense/blob/main/examples/ha-blueprints/02-dim-hallway-when-sleeping.yaml
   input:
     sleeping_entity:
       name: Someone sleeping binary_sensor
-      description: The `binary_sensor.*_someone_sleeping` entity published by RuView.
+      description: The `binary_sensor.*_someone_sleeping` entity published by AetherSense.
       selector:
         entity:
           domain: binary_sensor

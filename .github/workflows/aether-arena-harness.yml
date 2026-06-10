@@ -11,7 +11,7 @@ name: AetherArena harness gate (ADR-149)
 on:
   pull_request:
     paths:
-      - 'v2/crates/wifi-densepose-train/src/ruview_metrics.rs'
+      - 'v2/crates/wifi-densepose-train/src/aethersense_metrics.rs'
       - 'v2/crates/wifi-densepose-train/src/ablation.rs'
       - 'v2/crates/wifi-densepose-train/src/bin/aa_score_runner.rs'
       - 'aether-arena/**'

@@ -75,6 +75,32 @@ impl SignalAdapter {
         })
     }
 
+    /// Extract vital sign features from RuVector compressed breathing buffer
+    #[cfg(feature = "ruvector")]
+    pub fn extract_features_from_compressed(
+        &self,
+        buffer: &crate::detection::CompressedBreathingBuffer,
+    ) -> Result<VitalFeatures, AdapterError> {
+        let flat_data = buffer.to_flat_vec();
+        if flat_data.len() < self.window_size {
+            return Err(AdapterError::Signal(
+                "Insufficient data in compressed buffer".into(),
+            ));
+        }
+
+        let amplitudes: Vec<f64> = flat_data.iter().map(|&x| x as f64).collect();
+        let breathing_features = self.extract_frequency_band(&amplitudes, 0.1, 0.5)?;
+        let movement_features = self.extract_movement_features(&amplitudes)?;
+        let signal_quality = self.calculate_signal_quality(&amplitudes);
+
+        Ok(VitalFeatures {
+            breathing_features,
+            heartbeat_features: Vec::new(),
+            movement_features,
+            signal_quality,
+        })
+    }
+
     /// Convert upstream CsiFeatures to breathing pattern
     pub fn to_breathing_pattern(&self, features: &VitalFeatures) -> Option<BreathingPattern> {
         if features.breathing_features.len() < 3 {

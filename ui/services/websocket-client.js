@@ -1,4 +1,4 @@
-// WebSocket Client for Three.js Visualization - WiFi DensePose
+// WebSocket Client for Three.js Visualization - AetherSense
 // Default endpoint is `/ws/sensing` on the same host the page was served from.
 // Callers (e.g. viz.html) usually pass an explicit `url` derived from
 // `buildSensingWsUrl()` so HTTP/WS port pairings are handled centrally.

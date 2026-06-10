@@ -8,12 +8,12 @@
 //! Topic shape (ADR-122 §2.2):
 //!
 //! ```text
-//! ruview/<node_id>/bfld/presence/state          # class >= 2
-//! ruview/<node_id>/bfld/motion/state            # class >= 2
-//! ruview/<node_id>/bfld/person_count/state      # class >= 2
-//! ruview/<node_id>/bfld/zone_activity/state     # class >= 2 (when zone_id set)
-//! ruview/<node_id>/bfld/confidence/state        # class >= 2
-//! ruview/<node_id>/bfld/identity_risk/state     # class == 2 only
+//! aethersense/<node_id>/bfld/presence/state          # class >= 2
+//! aethersense/<node_id>/bfld/motion/state            # class >= 2
+//! aethersense/<node_id>/bfld/person_count/state      # class >= 2
+//! aethersense/<node_id>/bfld/zone_activity/state     # class >= 2 (when zone_id set)
+//! aethersense/<node_id>/bfld/confidence/state        # class >= 2
+//! aethersense/<node_id>/bfld/identity_risk/state     # class == 2 only
 //! ```
 //!
 //! `raw` (class-1) and `availability` topics are intentionally not yet emitted
@@ -27,7 +27,7 @@ use crate::{BfldEvent, PrivacyClass};
 /// Per-topic MQTT message ready to feed into `Client::publish(topic, payload)`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TopicMessage {
-    /// Full MQTT topic, e.g. `ruview/seed-01/bfld/presence/state`.
+    /// Full MQTT topic, e.g. `aethersense/seed-01/bfld/presence/state`.
     pub topic: String,
     /// UTF-8 payload bytes — single JSON scalar (`true`, `0.72`, `"living_room"`)
     /// or a compact JSON object for diagnostics.
@@ -35,11 +35,11 @@ pub struct TopicMessage {
 }
 
 impl TopicMessage {
-    /// Build a topic of the form `ruview/<node_id>/bfld/<suffix>/state`.
+    /// Build a topic of the form `aethersense/<node_id>/bfld/<suffix>/state`.
     #[must_use]
-    pub fn ruview_topic(node_id: &str, entity: &str) -> String {
+    pub fn aethersense_topic(node_id: &str, entity: &str) -> String {
         let mut s = String::with_capacity(7 + node_id.len() + 6 + entity.len() + 6);
-        s.push_str("ruview/");
+        s.push_str("aethersense/");
         s.push_str(node_id);
         s.push_str("/bfld/");
         s.push_str(entity);
@@ -117,19 +117,19 @@ pub fn render_events(event: &BfldEvent) -> Vec<TopicMessage> {
     let node = &event.node_id;
 
     out.push(TopicMessage {
-        topic: TopicMessage::ruview_topic(node, "presence"),
+        topic: TopicMessage::aethersense_topic(node, "presence"),
         payload: if event.presence { "true".into() } else { "false".into() },
     });
     out.push(TopicMessage {
-        topic: TopicMessage::ruview_topic(node, "motion"),
+        topic: TopicMessage::aethersense_topic(node, "motion"),
         payload: format!("{:.6}", event.motion),
     });
     out.push(TopicMessage {
-        topic: TopicMessage::ruview_topic(node, "person_count"),
+        topic: TopicMessage::aethersense_topic(node, "person_count"),
         payload: format!("{}", event.person_count),
     });
     out.push(TopicMessage {
-        topic: TopicMessage::ruview_topic(node, "confidence"),
+        topic: TopicMessage::aethersense_topic(node, "confidence"),
         payload: format!("{:.6}", event.confidence),
     });
 
@@ -137,7 +137,7 @@ pub fn render_events(event: &BfldEvent) -> Vec<TopicMessage> {
         // Emit a JSON string so consumers can distinguish "no zone" (omitted)
         // from "single-zone deployment" (always the same zone string).
         out.push(TopicMessage {
-            topic: TopicMessage::ruview_topic(node, "zone_activity"),
+            topic: TopicMessage::aethersense_topic(node, "zone_activity"),
             payload: format!("\"{zone}\""),
         });
     }
@@ -147,7 +147,7 @@ pub fn render_events(event: &BfldEvent) -> Vec<TopicMessage> {
     if class_byte == PrivacyClass::Anonymous.as_u8() {
         if let Some(score) = event.identity_risk_score {
             out.push(TopicMessage {
-                topic: TopicMessage::ruview_topic(node, "identity_risk"),
+                topic: TopicMessage::aethersense_topic(node, "identity_risk"),
                 payload: format!("{score:.6}"),
             });
         }

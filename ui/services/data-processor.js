@@ -1,4 +1,4 @@
-// Data Processor - WiFi DensePose 3D Visualization
+// Data Processor - AetherSense 3D Visualization
 // Transforms API data into Three.js geometry updates
 
 export class DataProcessor {

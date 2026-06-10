@@ -92,7 +92,7 @@ void csi_collector_start_hop_timer(void);
 
 /**
  * Upgrade the promiscuous filter to capture DATA frames in addition to MGMT
- * (RuView#893/#521).
+ * (AetherSense#893/#521).
  *
  * Called on display-less boards: the MGMT-only filter (the #396 display-crash
  * workaround set in csi_collector_init) only fires the CSI callback on sparse

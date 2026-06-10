@@ -127,7 +127,7 @@ const STEPS: TourStep[] = [
     icon: '🛍',
     title: 'App Store — 65 edge apps',
     body: `<p>Click the grid icon. The <b>App Store</b> catalogues every
-        hot-loadable WASM edge module RuView ships, organised by category:
+        hot-loadable WASM edge module AetherSense ships, organised by category:
         medical, security, smart-building, retail, industrial, signal,
         learning, autonomy, exotic.</p>
       <p>Each card carries id / category / status / event IDs / compute budget /
@@ -166,7 +166,7 @@ const STEPS: TourStep[] = [
           transport, and replay this tour.</li>
       </ul>
       <p style="font-size:12.5px; color:var(--ink-3); line-height:1.55;">
-        Source: <code>github.com/ruvnet/RuView</code> · Apache-2.0 OR MIT ·
+        Source: <code>github.com/ruvnet/AetherSense</code> · Apache-2.0 OR MIT ·
         ADRs 089/090/091/092/093.</p>`,
     cta: { label: 'Get started →' },
   },

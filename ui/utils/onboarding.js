@@ -1,7 +1,7 @@
 // Onboarding Tour - Interactive first-run walkthrough
 // Shows on first visit, can be re-triggered from command palette or help
 
-const STORAGE_KEY = 'ruview-onboarding-done';
+const STORAGE_KEY = 'aethersense-onboarding-done';
 
 export class Onboarding {
   constructor(app) {
@@ -26,7 +26,7 @@ export class Onboarding {
   defineSteps() {
     this.steps = [
       {
-        title: 'Welcome to RuView',
+        title: 'Welcome to AetherSense',
         text: 'WiFi-based human pose estimation that works through walls. Let\'s take a quick tour of the dashboard.',
         target: null, // No highlight, centered
         position: 'center'

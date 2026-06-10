@@ -1,4 +1,4 @@
-// Real-time CSI Signal Visualization - WiFi DensePose
+// Real-time CSI Signal Visualization - AetherSense
 // Amplitude heatmap, Phase plot, Doppler spectrum, Motion energy
 
 export class SignalVisualization {

@@ -1,4 +1,4 @@
-// Three.js Scene Setup - WiFi DensePose 3D Visualization
+// Three.js Scene Setup - AetherSense 3D Visualization
 // Camera, lights, renderer, OrbitControls
 
 export class Scene {

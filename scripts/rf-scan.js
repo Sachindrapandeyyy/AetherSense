@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * RuView RF Room Scanner — Live CSI spectrum analyzer
+ * AetherSense RF Room Scanner — Live CSI spectrum analyzer
  *
  * Listens on UDP for ADR-018 CSI frames from ESP32 nodes and builds a
  * real-time RF map of the room showing null zones (metal), static reflectors,
@@ -414,7 +414,7 @@ function renderASCII() {
   const nodeList = [...nodes.values()].filter(n => n.nSubcarriers > 0);
 
   if (nodeList.length === 0) {
-    lines.push(`=== RUVIEW RF SCAN === Listening on UDP :${PORT} ... no data yet`);
+    lines.push(`=== AETHERSENSE RF SCAN === Listening on UDP :${PORT} ... no data yet`);
     lines.push('Waiting for CSI frames from ESP32 nodes...');
     lines.push(`Elapsed: ${((Date.now() - startTime) / 1000).toFixed(0)}s | Frames: ${totalFrames}`);
     return lines.join('\n');
@@ -423,7 +423,7 @@ function renderASCII() {
   for (const node of nodeList) {
     const ch = node.channel || '?';
     const freq = node.freqMhz || '?';
-    lines.push(`=== RUVIEW RF SCAN -- Channel ${ch} (${freq} MHz) ===`);
+    lines.push(`=== AETHERSENSE RF SCAN -- Channel ${ch} (${freq} MHz) ===`);
     lines.push(`Node ${node.nodeId} (${node.address || '?'}) | ${node.fps.toFixed(1)} fps | RSSI ${node.rssi} dBm | Noise ${node.noiseFloor} dBm`);
 
     // Spectrum bar
@@ -569,7 +569,7 @@ function main() {
   server.on('listening', () => {
     const addr = server.address();
     if (!JSON_OUTPUT) {
-      console.log(`RuView RF Scanner listening on ${addr.address}:${addr.port}`);
+      console.log(`AetherSense RF Scanner listening on ${addr.address}:${addr.port}`);
       console.log('Waiting for CSI frames from ESP32 nodes...\n');
     }
   });

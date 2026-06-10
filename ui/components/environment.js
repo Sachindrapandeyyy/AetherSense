@@ -1,4 +1,4 @@
-// Room Environment - WiFi DensePose 3D Visualization
+// Room Environment - AetherSense 3D Visualization
 // Grid floor, AP/receiver markers, detection zones, confidence heatmap
 
 export class Environment {

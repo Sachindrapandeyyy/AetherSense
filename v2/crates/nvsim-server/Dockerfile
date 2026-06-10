@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy a stub workspace Cargo.toml + Cargo.lock that only references
-# nvsim and nvsim-server. This dodges the full RuView workspace's
+# nvsim and nvsim-server. This dodges the full AetherSense workspace's
 # wifi-densepose-* deps, none of which nvsim-server uses.
 COPY Cargo.lock Cargo.lock
 COPY crates/nvsim crates/nvsim
@@ -29,7 +29,7 @@ version = "0.3.0"
 edition = "2021"
 authors = ["rUv <ruv@ruv.net>"]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/ruvnet/RuView"
+repository = "https://github.com/ruvnet/AetherSense"
 
 [workspace.dependencies]
 serde = { version = "1.0", features = ["derive"] }

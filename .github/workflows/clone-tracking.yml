@@ -61,7 +61,7 @@ jobs:
             echo "Initializing $RVF with metadata segment"
             jq -n --arg repo "$REPO" --arg ts "$FETCHED_AT" '{
               type: "metadata",
-              name: "ruview-clone-traffic-history",
+              name: "aethersense-clone-traffic-history",
               version: "1.0.0",
               schema: "ruvector.rvf.jsonl/v1",
               format: "github-traffic-snapshots",

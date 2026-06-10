@@ -1,6 +1,6 @@
 //! # WiFi-DensePose WorldGraph (ADR-139)
 //!
-//! The environmental digital twin for the RuView streaming engine: a typed
+//! The environmental digital twin for the AetherSense streaming engine: a typed
 //! [`petgraph`] `StableDiGraph` of rooms, zones, walls, doorways, sensors, RF
 //! links, person tracks, object anchors, events, and semantic-state beliefs,
 //! connected by typed relations (observes / located_in / adjacent_to /

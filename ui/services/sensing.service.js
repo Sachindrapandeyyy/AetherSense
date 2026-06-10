@@ -10,8 +10,8 @@
  */
 
 const SENSING_WS_PORT_BY_HTTP_PORT = {
-  // Docker image: HTTP UI/API on 3000, sensing stream on 3001.
-  '3000': '3001',
+  // Local http server on port 3000 should connect to sensing stream on port 8765
+  '3000': '8765',
   // Python sensing stack: UI on 8080, sensing stream on 8765.
   '8080': '8765',
 };
@@ -254,8 +254,13 @@ class SensingService {
         node_id: 1,
         rssi_dbm: baseRssi + Math.sin(t * 0.5) * 3,
         position: [2, 0, 1.5],
-        amplitude: [],
-        subcarrier_count: 0,
+        amplitude: Array.from({ length: 56 }, (_, i) => {
+          // Generate a smooth wave-like amplitude per subcarrier with some noise
+          const base = 1.0 + Math.sin(t * 0.2 + i * 0.1) * 0.5;
+          const noise = Math.random() * 0.2;
+          return base + noise;
+        }),
+        subcarrier_count: 56,
       }],
       features: {
         mean_rssi: baseRssi + Math.sin(t * 0.5) * 3,

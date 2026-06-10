@@ -1,4 +1,4 @@
-//! # RuView Streaming Engine — integration layer
+//! # AetherSense Streaming Engine — integration layer
 //!
 //! This crate is the **composition root** that wires the ADR-135..146 building
 //! blocks into one end-to-end *trust-traceable* pipeline cycle. Each block was
@@ -99,7 +99,7 @@ pub struct TrustedOutput {
     pub witness: [u8; 32],
 }
 
-/// Composition root for the RuView streaming engine.
+/// Composition root for the AetherSense streaming engine.
 pub struct StreamingEngine {
     fuser: MultistaticFuser,
     coherence_accept: f32,

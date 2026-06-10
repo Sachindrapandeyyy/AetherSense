@@ -1,4 +1,4 @@
-// 3D Human Body Model - WiFi DensePose Visualization
+// 3D Human Body Model - AetherSense Visualization
 // Maps DensePose 24 body parts to 3D positions using simple geometries
 
 export class BodyModel {

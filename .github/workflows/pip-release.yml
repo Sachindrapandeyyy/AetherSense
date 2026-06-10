@@ -197,7 +197,7 @@ jobs:
             echo "ERROR: tombstone import succeeded — should have raised ImportError"
             exit 1
           fi
-          if ! grep -q "github.com/ruvnet/RuView" import-output.txt; then
+          if ! grep -q "github.com/ruvnet/AetherSense" import-output.txt; then
             echo "ERROR: tombstone ImportError missing migration URL"
             cat import-output.txt
             exit 1

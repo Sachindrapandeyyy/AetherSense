@@ -1,5 +1,5 @@
 blueprint:
-  name: RuView — bathroom fan while occupied
+  name: AetherSense — bathroom fan while occupied
   description: >
     Run the bathroom exhaust fan while bathroom_occupied is ON, with a
     configurable run-on delay after the zone clears (humidity recovery).
@@ -7,7 +7,7 @@ blueprint:
     not biometrics, so this works under --privacy-mode too.
     Part of the ADR-115 §3.12 starter blueprint set.
   domain: automation
-  source_url: https://github.com/ruvnet/RuView/blob/main/examples/ha-blueprints/06-bathroom-fan-while-occupied.yaml
+  source_url: https://github.com/ruvnet/AetherSense/blob/main/examples/ha-blueprints/06-bathroom-fan-while-occupied.yaml
   input:
     bathroom_entity:
       name: Bathroom occupied binary_sensor

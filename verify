@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ======================================================================
-#  WiFi-DensePose / RuView — Trust Kill Switch
+#  WiFi-DensePose / AetherSense — Trust Kill Switch
 #
 #  One-command proof replay across every layer of the stack:
 #    1. Python signal-processing pipeline (the original v1 proof)
@@ -86,7 +86,7 @@ phase() { echo ""; echo -e "${CYAN}[PHASE $1] $2${RESET}"; echo ""; }
 
 echo ""
 echo -e "${BOLD}======================================================================"
-echo "  WiFi-DensePose / RuView — Trust Kill Switch (multi-layer proof)"
+echo "  WiFi-DensePose / AetherSense — Trust Kill Switch (multi-layer proof)"
 echo -e "======================================================================${RESET}"
 
 PYTHON="$(command -v python3 || command -v python || true)"
@@ -154,9 +154,9 @@ if [ $RUN_RUST -eq 1 ]; then
         # error 5)` on Windows runs. Pre-existing in main (not a
         # PR-introduced issue), Linux CI is fully green. Exclude the
         # crate from local Windows runs so Phase 3 reports the rest
-        # honestly. Override with `RUVIEW_RUST_EXCLUDE=""` if you're
+        # honestly. Override with `AETHERSENSE_RUST_EXCLUDE=""` if you're
         # on Linux and want the full sweep.
-        EXCLUDE="${RUVIEW_RUST_EXCLUDE:---exclude cog-pose-estimation}"
+        EXCLUDE="${AETHERSENSE_RUST_EXCLUDE:---exclude cog-pose-estimation}"
         echo "  Running (may take ~2-3 minutes; pass --quick to skip; exclude=\"$EXCLUDE\")..."
         # set +o pipefail so a grep-with-no-matches inside the command
         # substitution can return 1 without poisoning the parent
@@ -202,12 +202,12 @@ fi
 if [ $RUN_INVARIANT -eq 1 ]; then
     phase 5 "ADR-125 §2.1.d invariant — identity_risk_score never crosses HAP/MCP boundary"
     bad=0
-    for f in scripts/ruview-sensing-server.py scripts/c6-presence-watcher.py; do
+    for f in scripts/aethersense-sensing-server.py scripts/c6-presence-watcher.py; do
         if [ -f "$SCRIPT_DIR/$f" ]; then
             # Each file must set identity_risk_score to None / null somewhere
             if ! grep -q '"identity_risk_score": None\|"identity_risk_score":None\|identity_risk_score=None' "$SCRIPT_DIR/$f" 2>/dev/null; then
                 # Only flag the sensing-server (the watcher uses it differently)
-                [ "$f" = "scripts/ruview-sensing-server.py" ] && { echo "    $f missing identity_risk_score=None"; bad=$((bad+1)); }
+                [ "$f" = "scripts/aethersense-sensing-server.py" ] && { echo "    $f missing identity_risk_score=None"; bad=$((bad+1)); }
             fi
             # Nothing must publish a non-None identity_risk_score
             if grep -E '"identity_risk_score":\s*[0-9]' "$SCRIPT_DIR/$f" 2>/dev/null; then

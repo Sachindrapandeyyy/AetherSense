@@ -1,4 +1,4 @@
-# RuView — Healthcare / AAL (Active and Assisted Living) dashboard
+# AetherSense — Healthcare / AAL (Active and Assisted Living) dashboard
 #
 # A care-giver-facing view designed for deployments where the
 # resident's wellbeing is the primary signal. Uses ONLY the semantic
@@ -12,14 +12,14 @@
 # HACS or fall back to the standard "entity" and "history-graph"
 # cards below as graceful degradation.
 
-title: RuView — Care view
-path: ruview-care
+title: AetherSense — Care view
+path: aethersense-care
 icon: mdi:heart-pulse
 
 cards:
   - type: markdown
     content: >
-      ## RuView — Resident care view
+      ## AetherSense — Resident care view
       **Privacy-mode-compatible** — only inferred wellbeing states
       shown. No biometric values exposed to this dashboard.
 
@@ -28,17 +28,17 @@ cards:
       - type: horizontal-stack
         cards:
           - type: tile
-            entity: binary_sensor.ruview_bedroom_someone_sleeping
+            entity: binary_sensor.aethersense_bedroom_someone_sleeping
             name: Sleeping
             icon: mdi:sleep
             color: blue
           - type: tile
-            entity: binary_sensor.ruview_bedroom_room_active
+            entity: binary_sensor.aethersense_bedroom_room_active
             name: Active
             icon: mdi:home-account
             color: green
           - type: tile
-            entity: binary_sensor.ruview_bedroom_bathroom_occupied
+            entity: binary_sensor.aethersense_bedroom_bathroom_occupied
             name: Bathroom
             icon: mdi:shower
             color: cyan
@@ -46,23 +46,23 @@ cards:
       - type: horizontal-stack
         cards:
           - type: tile
-            entity: binary_sensor.ruview_bedroom_possible_distress
+            entity: binary_sensor.aethersense_bedroom_possible_distress
             name: Distress
             icon: mdi:alert-octagon
             color: red
           - type: tile
-            entity: binary_sensor.ruview_bedroom_elderly_inactivity_anomaly
+            entity: binary_sensor.aethersense_bedroom_elderly_inactivity_anomaly
             name: Inactivity anomaly
             icon: mdi:account-off
             color: orange
           - type: tile
-            entity: binary_sensor.ruview_bedroom_no_movement
+            entity: binary_sensor.aethersense_bedroom_no_movement
             name: No movement
             icon: mdi:hand-back-left-off
             color: amber
 
       - type: gauge
-        entity: sensor.ruview_bedroom_fall_risk_elevated
+        entity: sensor.aethersense_bedroom_fall_risk_elevated
         name: Fall risk (24h trailing)
         min: 0
         max: 100
@@ -75,14 +75,14 @@ cards:
         title: 24h care events
         hours_to_show: 24
         entities:
-          - event.ruview_bedroom_fall
-          - event.ruview_bedroom_bed_exit
-          - binary_sensor.ruview_bedroom_possible_distress
-          - binary_sensor.ruview_bedroom_elderly_inactivity_anomaly
-          - binary_sensor.ruview_bedroom_no_movement
+          - event.aethersense_bedroom_fall
+          - event.aethersense_bedroom_bed_exit
+          - binary_sensor.aethersense_bedroom_possible_distress
+          - binary_sensor.aethersense_bedroom_elderly_inactivity_anomaly
+          - binary_sensor.aethersense_bedroom_no_movement
 
       - type: entity
-        entity: binary_sensor.ruview_bedroom_presence
+        entity: binary_sensor.aethersense_bedroom_presence
         name: Last presence change
         attribute: last_changed
         icon: mdi:clock-outline

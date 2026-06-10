@@ -1,5 +1,5 @@
 blueprint:
-  name: RuView — alert on elderly inactivity anomaly
+  name: AetherSense — alert on elderly inactivity anomaly
   description: >
     Send a high-priority push notification when elderly_inactivity_anomaly
     fires — the resident has been still for unusually long given their
@@ -7,7 +7,7 @@ blueprint:
     via a notify group if the first alert isn't acknowledged.
     Part of the ADR-115 §3.12 starter blueprint set.
   domain: automation
-  source_url: https://github.com/ruvnet/RuView/blob/main/examples/ha-blueprints/04-alert-elderly-inactivity-anomaly.yaml
+  source_url: https://github.com/ruvnet/AetherSense/blob/main/examples/ha-blueprints/04-alert-elderly-inactivity-anomaly.yaml
   input:
     anomaly_entity:
       name: Elderly inactivity anomaly binary_sensor

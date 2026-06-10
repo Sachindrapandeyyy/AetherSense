@@ -7,7 +7,7 @@ name: ADR-115 MQTT integration tests
 #
 # Default `cargo test --workspace` does not run these tests because they
 # require a broker and pull rumqttc into the build. This workflow opts
-# into both by setting --features mqtt and RUVIEW_RUN_INTEGRATION=1.
+# into both by setting --features mqtt and AETHERSENSE_RUN_INTEGRATION=1.
 
 on:
   pull_request:
@@ -34,8 +34,8 @@ jobs:
     # inline `allow_anonymous true` config.
 
     env:
-      RUVIEW_RUN_INTEGRATION: "1"
-      RUVIEW_TEST_MQTT_PORT: "11883"
+      AETHERSENSE_RUN_INTEGRATION: "1"
+      AETHERSENSE_TEST_MQTT_PORT: "11883"
       CARGO_TERM_COLOR: always
       RUST_BACKTRACE: 1
 

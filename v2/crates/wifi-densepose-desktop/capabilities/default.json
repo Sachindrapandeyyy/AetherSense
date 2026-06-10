@@ -1,6 +1,6 @@
 {
   "identifier": "default",
-  "description": "RuView default capability set",
+  "description": "AetherSense default capability set",
   "windows": ["main"],
   "permissions": [
     "core:default",

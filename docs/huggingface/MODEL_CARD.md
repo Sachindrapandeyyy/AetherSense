@@ -226,19 +226,19 @@ The Cognitum Seed runs the ONNX models on-device and orchestrates the ESP32 node
 
 ### RuVector format (.rvf)
 
-The `.rvf` file contains pre-computed embeddings in RuVector format, used by the RuView application for advanced multi-node fusion and cross-viewpoint pose estimation. You only need this if you are using the full RuView pipeline. For basic inference, the ONNX files are sufficient.
+The `.rvf` file contains pre-computed embeddings in RuVector format, used by the AetherSense application for advanced multi-node fusion and cross-viewpoint pose estimation. You only need this if you are using the full AetherSense pipeline. For basic inference, the ONNX files are sufficient.
 
 ---
 
-## How to use with RuView
+## How to use with AetherSense
 
-[RuView](https://github.com/ruvnet/RuView) is the open-source application that ties everything together: firmware flashing, real-time sensing, and a browser-based dashboard.
+[AetherSense](https://github.com/ruvnet/AetherSense) is the open-source application that ties everything together: firmware flashing, real-time sensing, and a browser-based dashboard.
 
 ### 1. Flash firmware to ESP32-S3
 
 ```bash
-git clone https://github.com/ruvnet/RuView.git
-cd RuView
+git clone https://github.com/ruvnet/AetherSense.git
+cd AetherSense
 
 # Flash firmware (requires ESP-IDF v5.4 or use pre-built binaries from Releases)
 # See the repo README for platform-specific instructions
@@ -313,7 +313,7 @@ If you use this model in your research, please cite:
   title   = {WiFi-DensePose: Human Pose Estimation from WiFi Channel State Information},
   author  = {ruvnet},
   year    = {2026},
-  url     = {https://github.com/ruvnet/RuView},
+  url     = {https://github.com/ruvnet/AetherSense},
   license = {MIT},
   note    = {Self-supervised contrastive learning on ESP32-S3 CSI data}
 }
@@ -323,7 +323,7 @@ If you use this model in your research, please cite:
 
 ## License
 
-MIT License. See [LICENSE](https://github.com/ruvnet/RuView/blob/main/LICENSE) for details.
+MIT License. See [LICENSE](https://github.com/ruvnet/AetherSense/blob/main/LICENSE) for details.
 
 You are free to use, modify, and distribute this model for any purpose, including commercial applications.
 
@@ -331,6 +331,6 @@ You are free to use, modify, and distribute this model for any purpose, includin
 
 ## Links
 
-- **GitHub:** [github.com/ruvnet/RuView](https://github.com/ruvnet/RuView)
+- **GitHub:** [github.com/ruvnet/AetherSense](https://github.com/ruvnet/AetherSense)
 - **Hardware:** [ESP32-S3 DevKit](https://www.espressif.com/en/products/devkits) | [Cognitum Seed](https://cognitum.one)
 - **ONNX Runtime:** [onnxruntime.ai](https://onnxruntime.ai)

@@ -1,4 +1,4 @@
-/* RuView Edge App Store registry.
+/* AetherSense Edge App Store registry.
  *
  * Catalog of every WASM edge module shipping in the workspace plus the
  * `nvsim` simulator itself. Each entry maps to a hot-loadable algorithm

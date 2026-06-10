@@ -1,5 +1,5 @@
 blueprint:
-  name: RuView — meeting lights + presence mode
+  name: AetherSense — meeting lights + presence mode
   description: >
     When meeting_in_progress fires, set conference-room lights to a
     professional white scene and switch presence-aware automations
@@ -7,7 +7,7 @@ blueprint:
     interrupt. Restores prior scene when meeting ends.
     Part of the ADR-115 §3.12 starter blueprint set.
   domain: automation
-  source_url: https://github.com/ruvnet/RuView/blob/main/examples/ha-blueprints/05-meeting-lights-presence-mode.yaml
+  source_url: https://github.com/ruvnet/AetherSense/blob/main/examples/ha-blueprints/05-meeting-lights-presence-mode.yaml
   input:
     meeting_entity:
       name: Meeting in progress binary_sensor

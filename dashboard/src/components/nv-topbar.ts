@@ -100,7 +100,7 @@ export class NvTopbar extends LitElement {
     const seedHex = seed.value.toString(16).toUpperCase().padStart(8, '0');
     return html`
       <div class="crumbs">
-        <span class="home">RuView</span><span class="sep">/</span>
+        <span class="home">AetherSense</span><span class="sep">/</span>
         <span>nvsim</span><span class="sep">/</span>
         <span class="cur" id="scene-name">${sceneName.value}</span>
       </div>

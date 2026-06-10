@@ -59,8 +59,8 @@
   },
   "config": {
     "autoStart": false,
-    "logDir": "/Users/cohen/GitHub/ruvnet/RuView/firmware/esp32-csi-node/.claude-flow/logs",
-    "stateFile": "/Users/cohen/GitHub/ruvnet/RuView/firmware/esp32-csi-node/.claude-flow/daemon-state.json",
+    "logDir": "/Users/cohen/GitHub/ruvnet/AetherSense/firmware/esp32-csi-node/.claude-flow/logs",
+    "stateFile": "/Users/cohen/GitHub/ruvnet/AetherSense/firmware/esp32-csi-node/.claude-flow/daemon-state.json",
     "maxConcurrent": 2,
     "workerTimeoutMs": 300000,
     "resourceThresholds": {

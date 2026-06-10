@@ -61,7 +61,7 @@ pub async fn fetch_tile(
     let url = provider.url(coord);
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(10))
-        .user_agent("RuView/0.1 (https://github.com/ruvnet/RuView)")
+        .user_agent("AetherSense/0.1 (https://github.com/ruvnet/AetherSense)")
         .build()?;
 
     let resp = client.get(&url).send().await?;

@@ -93,7 +93,7 @@ export class WasmClient implements NvsimClient {
   async boot(): Promise<WasmBootInfo> {
     if (this.bootInfo) return this.bootInfo;
     // Pass Vite's resolved BASE_URL so the worker can locate /nvsim-pkg/
-    // under the same prefix the dashboard is served from (e.g. /RuView/nvsim/
+    // under the same prefix the dashboard is served from (e.g. /AetherSense/nvsim/
     // on GitHub Pages, "/" in dev).
     const base = import.meta.env.BASE_URL ?? '/';
     const r = await this.rpc<{ buildVersion: string; frameMagic: number; frameBytes: number; expectedWitnessHex: string }>(

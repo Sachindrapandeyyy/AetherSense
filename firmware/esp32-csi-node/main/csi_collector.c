@@ -368,7 +368,7 @@ static void wifi_promiscuous_cb(void *buf, wifi_promiscuous_pkt_type_t type)
     (void)type;
 }
 
-/* ---- RuView#521/#954: connected-STA CSI traffic source (additive) ----
+/* ---- AetherSense#521/#954: connected-STA CSI traffic source (additive) ----
  *
  * The ESP32 CSI engine only produces CSI for received OFDM frames (L-LTF/HT-LTF).
  * On a quiet network — or on a display-enabled build where the #893 MGMT->MGMT+DATA
@@ -510,8 +510,8 @@ void csi_collector_init(void)
     /* Disable WiFi modem sleep — reliable CSI capture needs the radio awake.
      * The ESP-IDF STA default is WIFI_PS_MIN_MODEM, which lets the modem
      * sleep between DTIM beacons; with the MGMT-only promiscuous filter
-     * (RuView#396) that starves the CSI callback and the per-second yield
-     * collapses toward 0 pps (RuView#521). Operators who want battery
+     * (AetherSense#396) that starves the CSI callback and the per-second yield
+     * collapses toward 0 pps (AetherSense#521). Operators who want battery
      * duty-cycling opt back in via power_mgmt_init() (provision.py
      * --duty-cycle <N>), which runs after this and re-enables modem sleep. */
     esp_err_t ps_err = esp_wifi_set_ps(WIFI_PS_NONE);
@@ -528,7 +528,7 @@ void csi_collector_init(void)
     ESP_ERROR_CHECK(esp_wifi_set_promiscuous(true));
     ESP_ERROR_CHECK(esp_wifi_set_promiscuous_rx_cb(wifi_promiscuous_cb));
 
-    /* MGMT-only promiscuous filter + active probe injection (RuView#396).
+    /* MGMT-only promiscuous filter + active probe injection (AetherSense#396).
      *
      * DATA frames cause 100-500+ WiFi HW interrupts/sec which crashes Core 0
      * in wDev_ProcessFiq (SPI flash cache race in ESP-IDF WiFi blob).
@@ -540,7 +540,7 @@ void csi_collector_init(void)
     };
     ESP_ERROR_CHECK(esp_wifi_set_promiscuous_filter(&filt));
 
-    ESP_LOGI(TAG, "Promiscuous mode enabled (MGMT-only, RuView#396)");
+    ESP_LOGI(TAG, "Promiscuous mode enabled (MGMT-only, AetherSense#396)");
 
 #if CONFIG_SOC_WIFI_HE_SUPPORT
     /* Wi-Fi 6 targets (e.g. ESP32-C6): wifi_csi_config_t is wifi_csi_acquire_config_t
@@ -591,7 +591,7 @@ void csi_collector_init(void)
     ESP_LOGI(TAG, "CSI collection initialized (node_id=%u, channel=%u)",
              (unsigned)s_node_id, (unsigned)csi_channel);
 
-    /* RuView#521/#954: start the connected-STA traffic source so the CSI engine
+    /* AetherSense#521/#954: start the connected-STA traffic source so the CSI engine
      * receives a guaranteed OFDM unicast floor even when promiscuous capture is
      * starved (display builds / quiet networks). Additive to #396/#893. */
     csi_start_self_ping();
@@ -708,8 +708,8 @@ static void hop_timer_cb(void *arg)
 
 void csi_collector_enable_data_capture(void)
 {
-    /* MGMT-only (RuView#396) starves the CSI callback on display-less boards
-     * (RuView#521/#893): beacons alone are sparse, yield collapses to 0 pps.
+    /* MGMT-only (AetherSense#396) starves the CSI callback on display-less boards
+     * (AetherSense#521/#893): beacons alone are sparse, yield collapses to 0 pps.
      * Without a display there is no QSPI/SPI-flash cache contention with the
      * DATA-frame interrupt load, so capture DATA frames too. */
     wifi_promiscuous_filter_t filt = {
@@ -717,7 +717,7 @@ void csi_collector_enable_data_capture(void)
     };
     esp_err_t err = esp_wifi_set_promiscuous_filter(&filt);
     if (err == ESP_OK) {
-        ESP_LOGI(TAG, "CSI filter upgraded to MGMT+DATA (no display, RuView#893)");
+        ESP_LOGI(TAG, "CSI filter upgraded to MGMT+DATA (no display, AetherSense#893)");
     } else {
         ESP_LOGW(TAG, "Failed to enable DATA-frame CSI capture: %s", esp_err_to_name(err));
     }

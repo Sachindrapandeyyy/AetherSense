@@ -1,5 +1,5 @@
 /**
- * Demo Data Generator — RuView Observatory
+ * Demo Data Generator — AetherSense Observatory
  *
  * Generates synthetic CSI data matching the SensingUpdate contract.
  * 12 scenarios covering all edge module categories.
@@ -210,6 +210,41 @@ export class DemoDataGenerator {
   // ---- Base template ----
 
   _baseFrame(overrides) {
+    const scenario = overrides?.scenario || SCENARIOS[this._scenarioIndex];
+    
+    // Default WorldGraph nodes (ADR-139)
+    const wgNodes = [
+      { id: 1, kind: 'room', name: 'Observatory', bounds_enu: { shape: 'rectangle', min_e: -6.0, min_n: -5.0, max_e: 6.0, max_n: 5.0 } },
+      { id: 2, kind: 'wall', a: { east_m: -6.0, north_m: -5.0 }, b: { east_m: -6.0, north_m: 5.0 }, rf_attenuation_db: 3.0 },
+      { id: 3, kind: 'wall', a: { east_m: -6.0, north_m: 5.0 }, b: { east_m: 6.0, north_m: 5.0 }, rf_attenuation_db: 3.0 },
+      { id: 4, kind: 'wall', a: { east_m: 6.0, north_m: 5.0 }, b: { east_m: 6.0, north_m: -5.0 }, rf_attenuation_db: 3.0 },
+      { id: 5, kind: 'wall', a: { east_m: 6.0, north_m: -5.0 }, b: { east_m: -6.0, north_m: -5.0 }, rf_attenuation_db: 3.0 },
+      { id: 6, kind: 'sensor', device_id: 'TX1', position: { east_m: -4.0, north_m: -3.0, up_m: 0.92 }, modality: 'wifi_csi' },
+      { id: 7, kind: 'sensor', device_id: 'RX1', position: { east_m: -4.0, north_m: 3.0, up_m: 0.92 }, modality: 'wifi_csi' }
+    ];
+
+    // Scenario-specific object anchors (ADR-139)
+    let nextId = 8;
+    if (scenario === 'sleep_monitoring') {
+      wgNodes.push({ id: nextId++, kind: 'object_anchor', anchor_kind: 'furniture', name: 'bed', position: { east_m: 3.5, north_m: -3.5, up_m: 0.0 } });
+    } else if (scenario === 'intrusion_detect') {
+      wgNodes.push({ id: nextId++, kind: 'object_anchor', anchor_kind: 'furniture', name: 'door', position: { east_m: -5.5, north_m: -1.0, up_m: 0.0 } });
+    } else if (scenario === 'gesture_control') {
+      wgNodes.push({ id: nextId++, kind: 'object_anchor', anchor_kind: 'furniture', name: 'screen', position: { east_m: 0.0, north_m: -4.7, up_m: 0.0 } });
+    } else if (scenario === 'crowd_occupancy') {
+      wgNodes.push({ id: nextId++, kind: 'object_anchor', anchor_kind: 'furniture', name: 'desk', position: { east_m: -2.0, north_m: -1.0, up_m: 0.0 } });
+      wgNodes.push({ id: nextId++, kind: 'object_anchor', anchor_kind: 'furniture', name: 'desk2', position: { east_m: 2.0, north_m: 1.0, up_m: 0.0 } });
+    } else if (scenario === 'search_rescue') {
+      wgNodes.push({ id: nextId++, kind: 'object_anchor', anchor_kind: 'furniture', name: 'rubbleWall', position: { east_m: 2.0, north_m: 0.0, up_m: 0.0 } });
+    } else if (scenario === 'elderly_care') {
+      wgNodes.push({ id: nextId++, kind: 'object_anchor', anchor_kind: 'furniture', name: 'chair', position: { east_m: 1.0, north_m: -1.5, up_m: 0.0 } });
+    } else if (scenario === 'fitness_tracking') {
+      wgNodes.push({ id: nextId++, kind: 'object_anchor', anchor_kind: 'furniture', name: 'exerciseMat', position: { east_m: 0.0, north_m: 0.0, up_m: 0.0 } });
+    } else if (scenario === 'security_patrol') {
+      wgNodes.push({ id: nextId++, kind: 'object_anchor', anchor_kind: 'furniture', name: 'camera1', position: { east_m: 5.0, north_m: -4.5, up_m: 3.5 } });
+      wgNodes.push({ id: nextId++, kind: 'object_anchor', anchor_kind: 'furniture', name: 'camera2', position: { east_m: -5.0, north_m: 4.5, up_m: 3.5 } });
+    }
+
     return {
       type: 'sensing_update',
       timestamp: Date.now() / 1000,
@@ -224,6 +259,7 @@ export class DemoDataGenerator {
       estimated_persons: 0,
       edge_modules: {},
       _observatory: { subcarrier_iq: [], per_subcarrier_variance: new Float32Array(64).fill(0.02) },
+      world_graph: { nodes: wgNodes },
       ...overrides,
     };
   }

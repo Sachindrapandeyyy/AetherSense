@@ -388,12 +388,12 @@ menu "ESP32-C6 capabilities (ADR-110)"
 
     config C6_SOFTAP_HE_SSID
         string "Soft-AP SSID (when C6_SOFTAP_HE_ENABLE)"
-        default "ruview-c6-twt"
+        default "aethersense-c6-twt"
         depends on C6_SOFTAP_HE_ENABLE
 
     config C6_SOFTAP_HE_PSK
         string "Soft-AP WPA2 password (>= 8 chars)"
-        default "ruviewtwt"
+        default "aethersensetwt"
         depends on C6_SOFTAP_HE_ENABLE
 
     config C6_SOFTAP_HE_CHANNEL

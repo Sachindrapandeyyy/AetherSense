@@ -6,7 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 
-/// HAP service types exposed by the RuView bridge.
+/// HAP service types exposed by the AetherSense bridge.
 ///
 /// Derived from HomeKit Accessory Protocol Specification §8 (service
 /// definitions) and cross-checked against HA's `homekit` integration
@@ -19,7 +19,7 @@ pub enum HapAccessoryType {
     Switch,
     /// HAP `OccupancySensor` — maps presence / occupancy binary sensors.
     OccupancySensor,
-    /// HAP `MotionSensor` — maps motion binary sensors + RuView motion.
+    /// HAP `MotionSensor` — maps motion binary sensors + AetherSense motion.
     MotionSensor,
     /// HAP `TemperatureSensor` — maps `sensor.*temperature*` entities.
     TemperatureSensor,

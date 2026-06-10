@@ -1,4 +1,4 @@
-// Mock Server for Testing WiFi DensePose UI
+// Mock Server for Testing AetherSense UI
 
 export class MockServer {
   constructor() {

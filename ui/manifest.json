@@ -1,6 +1,6 @@
 {
-  "name": "RuView - WiFi DensePose",
-  "short_name": "RuView",
+  "name": "AetherSense - AetherSense",
+  "short_name": "AetherSense",
   "description": "WiFi-based human pose estimation, vital sign detection, and presence sensing through walls",
   "start_url": "/",
   "display": "standalone",

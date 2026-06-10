@@ -84,17 +84,17 @@ Callback = Callable[[SemanticPrimitiveEvent], None]
 class SemanticPrimitiveListener:
     """Routes raw MQTT state messages to per-primitive callbacks.
 
-    Designed to plug into RuViewMqttClient:
+    Designed to plug into AetherSenseMqttClient:
 
     ```python
     from wifi_densepose.client import (
-        RuViewMqttClient, SemanticPrimitive, SemanticPrimitiveListener
+        AetherSenseMqttClient, SemanticPrimitive, SemanticPrimitiveListener
     )
 
     listener = SemanticPrimitiveListener()
     listener.on(SemanticPrimitive.SomeoneSleeping, lambda e: print(e))
 
-    client = RuViewMqttClient()
+    client = AetherSenseMqttClient()
     client.on_message(
         "homeassistant/+/wifi_densepose_+/+/state",
         listener.handle_mqtt_message,

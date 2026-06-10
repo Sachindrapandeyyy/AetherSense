@@ -11,14 +11,14 @@
 #
 # Where the numbers come from:
 #   - sensor.living_room_presence / _motion / bedroom_breathing_rate /
-#     bedroom_heart_rate are pulled live from the RuView sensing-server
-#     (RUVIEW_URL/api/v1/vitals/12/latest) when reachable.
+#     bedroom_heart_rate are pulled live from the AetherSense sensing-server
+#     (AETHERSENSE_URL/api/v1/vitals/12/latest) when reachable.
 #   - Other entities use plausible literals.
 #
 # Usage:
 #   bash scripts/homecore-seed.sh
 #   HOMECORE_URL=http://localhost:8123 HOMECORE_TOKEN=dev-token bash scripts/homecore-seed.sh
-#   RUVIEW_URL=http://ruv-mac-mini:3000 bash scripts/homecore-seed.sh  # live numbers
+#   AETHERSENSE_URL=http://ruv-mac-mini:3000 bash scripts/homecore-seed.sh  # live numbers
 #
 # Idempotent: re-running just updates the values.
 
@@ -26,7 +26,7 @@ set -euo pipefail
 
 URL="${HOMECORE_URL:-http://127.0.0.1:8123}"
 TOKEN="${HOMECORE_TOKEN:-dev-token}"
-RUVIEW_URL="${RUVIEW_URL:-http://localhost:3000}"
+AETHERSENSE_URL="${AETHERSENSE_URL:-http://localhost:3000}"
 
 post() {
     local entity_id="$1"; shift
@@ -37,18 +37,18 @@ post() {
         -d "$body" >/dev/null && echo "  set $entity_id"
 }
 
-# Pull a live snapshot from the RuView sensing-server (optional).
-ruview_snapshot="{}"
-if curl -fsS --max-time 2 "$RUVIEW_URL/api/v1/vitals/12/latest" -o /tmp/ruview-vitals.json 2>/dev/null; then
-    ruview_snapshot=$(cat /tmp/ruview-vitals.json)
-    echo "Pulled live RuView snapshot from $RUVIEW_URL"
+# Pull a live snapshot from the AetherSense sensing-server (optional).
+aethersense_snapshot="{}"
+if curl -fsS --max-time 2 "$AETHERSENSE_URL/api/v1/vitals/12/latest" -o /tmp/aethersense-vitals.json 2>/dev/null; then
+    aethersense_snapshot=$(cat /tmp/aethersense-vitals.json)
+    echo "Pulled live AetherSense snapshot from $AETHERSENSE_URL"
 else
-    echo "RuView snapshot unreachable — using defaults (set RUVIEW_URL to your sensing-server to pull live values)"
+    echo "AetherSense snapshot unreachable — using defaults (set AETHERSENSE_URL to your sensing-server to pull live values)"
 fi
 
 get_num() {
     local key="$1" default="$2"
-    echo "$ruview_snapshot" | python3 -c "
+    echo "$aethersense_snapshot" | python3 -c "
 import sys, json
 try:
     d = json.loads(sys.stdin.read())
@@ -67,7 +67,7 @@ motion=$(get_num motion 0.0)
 echo
 echo "Seeding HOMECORE at $URL ..."
 
-post sensor.living_room_presence "{\"state\": \"$presence\", \"attributes\": {\"friendly_name\": \"Living Room Presence\", \"device_class\": \"occupancy\", \"source\": \"RuView ESP32-C6 BFLD\"}}"
+post sensor.living_room_presence "{\"state\": \"$presence\", \"attributes\": {\"friendly_name\": \"Living Room Presence\", \"device_class\": \"occupancy\", \"source\": \"AetherSense ESP32-C6 BFLD\"}}"
 post sensor.living_room_motion_score "{\"state\": \"$motion\", \"attributes\": {\"friendly_name\": \"Living Room Motion Score\", \"unit_of_measurement\": \"score\", \"icon\": \"mdi:motion-sensor\"}}"
 post sensor.bedroom_breathing_rate "{\"state\": \"$breathing\", \"attributes\": {\"friendly_name\": \"Bedroom Breathing Rate\", \"unit_of_measurement\": \"BPM\", \"device_class\": \"frequency\", \"source\": \"Seeed MR60BHA2 mmWave\"}}"
 post sensor.bedroom_heart_rate "{\"state\": \"$heart_rate\", \"attributes\": {\"friendly_name\": \"Bedroom Heart Rate\", \"unit_of_measurement\": \"BPM\", \"device_class\": \"frequency\", \"source\": \"Seeed MR60BHA2 mmWave\"}}"

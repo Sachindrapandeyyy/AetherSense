@@ -3,11 +3,11 @@ use wifi_densepose_geo::*;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     println!("╔══════════════════════════════════════════════╗");
-    println!("║  ruview-geo — Real Data Validation           ║");
+    println!("║  aethersense-geo — Real Data Validation           ║");
     println!("╚══════════════════════════════════════════════╝\n");
 
     let t0 = std::time::Instant::now();
-    let cache = cache::TileCache::new("/tmp/ruview-geo-validate");
+    let cache = cache::TileCache::new("/tmp/aethersense-geo-validate");
 
     let loc = locate::get_location(&format!("{}/location.json", cache.base_dir.display())).await?;
     println!("  Location: {:.4}N, {:.4}W", loc.lat, loc.lon);

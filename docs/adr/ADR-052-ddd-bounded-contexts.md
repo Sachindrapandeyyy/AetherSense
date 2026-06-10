@@ -1,6 +1,6 @@
 # ADR-052 Appendix: DDD Bounded Contexts — Tauri Desktop Frontend
 
-This document maps out the domain model for the RuView Tauri desktop application
+This document maps out the domain model for the AetherSense Tauri desktop application
 described in ADR-052. It defines bounded contexts, their aggregates, entities,
 value objects, and the domain events flowing between them.
 
@@ -51,7 +51,7 @@ address.
 **Invariant**: No two nodes may share the same MAC address. If a node is
 discovered via multiple strategies, the most recent data wins.
 
-**Persistence**: The registry is persisted to `~/.ruview/nodes.db` (SQLite via
+**Persistence**: The registry is persisted to `~/.aethersense/nodes.db` (SQLite via
 `rusqlite`). On startup, all previously known nodes are loaded as `Offline` and
 reconciled against a fresh discovery scan. This means the app **remembers the
 mesh** across restarts — critical for field deployments where nodes may be

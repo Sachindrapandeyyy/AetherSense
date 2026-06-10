@@ -63,7 +63,7 @@ export class ScreenshotTool {
     const dataUrl = canvas.toDataURL('image/png');
     const link = document.createElement('a');
     link.href = dataUrl;
-    link.download = `ruview-screenshot-${this.timestamp()}.png`;
+    link.download = `aethersense-screenshot-${this.timestamp()}.png`;
     link.click();
   }
 
@@ -89,12 +89,12 @@ export class ScreenshotTool {
     // Add timestamp watermark
     ctx.fillStyle = 'rgba(255,255,255,0.3)';
     ctx.font = '12px monospace';
-    ctx.fillText(`RuView - ${new Date().toLocaleString()}`, 10, mergedCanvas.height - 10);
+    ctx.fillText(`AetherSense - ${new Date().toLocaleString()}`, 10, mergedCanvas.height - 10);
 
     const dataUrl = mergedCanvas.toDataURL('image/png');
     const link = document.createElement('a');
     link.href = dataUrl;
-    link.download = `ruview-screenshot-${this.timestamp()}.png`;
+    link.download = `aethersense-screenshot-${this.timestamp()}.png`;
     link.click();
   }
 
@@ -140,7 +140,7 @@ export class ScreenshotTool {
     // Watermark
     ctx.fillStyle = 'rgba(255,255,255,0.15)';
     ctx.font = '11px monospace';
-    ctx.fillText(`RuView - ${new Date().toLocaleString()}`, 10, rect.height - 10);
+    ctx.fillText(`AetherSense - ${new Date().toLocaleString()}`, 10, rect.height - 10);
 
     return canvas;
   }

@@ -12,7 +12,7 @@
 /* Set true once an AMOLED panel is detected and the display task starts.
  * Defined outside the CONFIG_DISPLAY_ENABLE guard so display_is_active()
  * exists on headless builds too (where it stays false → CSI captures DATA
- * frames; see RuView#893). */
+ * frames; see AetherSense#893). */
 static bool s_display_active = false;
 
 bool display_is_active(void) { return s_display_active; }

@@ -22,7 +22,7 @@ const GLOSSARY: GlossaryItem[] = [
   { term: 'Lock-in demod', category: 'physics', body: 'Multiply the photoluminescence signal by cos(2π·f_mod·t) and low-pass to recover the slowly-varying B-field component. The simulator emulates a lock-in with output gain 2 and a single-pole IIR LP filter; settable via the Tunables panel (f_mod default 1 kHz).' },
   { term: 'Shot-noise floor', category: 'physics', body: 'δB = 1 / (γ_e · C · √(N · t · T₂*)) — the irreducible quantum noise floor for an NV ensemble. With nvsim defaults (N=10¹², C=0.03, T₂*=200 ns): ≈1.18 pT/√Hz. Toggleable via the Tunables panel for "analytic" runs without noise.' },
   { term: 'Biot-Savart', category: 'physics', body: 'Closed-form magnetic field at a point from a current loop or a magnetic dipole. The Scene panel\'s sources (heart proxy, mains loop, ferrous body, eddy current) all reduce to Biot-Savart-style superpositions over the sensor position.' },
-  { term: 'Multistatic fusion', category: 'physics', body: 'Combining evidence from multiple sensors at known geometric configurations. RuView\'s Cramer-Rao-weighted attention over WiFi CSI nodes + 60 GHz radar nodes + (hypothetically) NV nodes; documented in ADR-029 and the Ghost Murmur view.' },
+  { term: 'Multistatic fusion', category: 'physics', body: 'Combining evidence from multiple sensors at known geometric configurations. AetherSense\'s Cramer-Rao-weighted attention over WiFi CSI nodes + 60 GHz radar nodes + (hypothetically) NV nodes; documented in ADR-029 and the Ghost Murmur view.' },
   { term: 'Scene', category: 'ui', body: 'The simulated magnetic environment: a list of sources (dipole, current loop, ferrous body, eddy current) plus one or more sensor positions and an ambient field. The dashboard ships a "rebar-walkby-01" reference scene; click "New scene…" in the command palette (⌘K) to build your own.' },
   { term: 'Tunables', category: 'ui', body: 'Sliders that change the running pipeline\'s digitiser config. Each edit debounces 300 ms, then rebuilds the WASM pipeline with the new f_s / f_mod / dt / shot-noise setting. The frame stream picks up the change without a restart.' },
   { term: 'Transport', category: 'ui', body: 'How the dashboard talks to nvsim. Default is WASM — the simulator runs in a Web Worker right here in your browser, no server. The optional WS transport is REST + binary WebSocket against a host-supplied nvsim-server (see ADR-092 §6.2). Toggle in Settings.' },
@@ -57,7 +57,7 @@ const FAQ = [
   },
   {
     q: 'Why is there an "App Store" if this is a magnetometer simulator?',
-    a: 'Because nvsim is one tile in a larger sensing platform. The catalog lists every hot-loadable WASM edge module RuView ships — medical, security, building, retail, industrial, signal, learning, autonomy. The simulators (nvsim today, more in future) are first-class entries in the same catalog.',
+    a: 'Because nvsim is one tile in a larger sensing platform. The catalog lists every hot-loadable WASM edge module AetherSense ships — medical, security, building, retail, industrial, signal, learning, autonomy. The simulators (nvsim today, more in future) are first-class entries in the same catalog.',
   },
 ];
 
@@ -409,11 +409,11 @@ export class NvHelp extends LitElement {
         byte-identical SHA-256 witness across browsers, OSes, and transports. Press the
         <kbd>Verify witness</kbd> button on the Witness tab to assert this live.</p>
       <p>The codebase is open source (Apache-2.0 OR MIT). Find it on GitHub:
-        <code>github.com/ruvnet/RuView</code>. Decisions are documented in ADRs 089 (nvsim),
+        <code>github.com/ruvnet/AetherSense</code>. Decisions are documented in ADRs 089 (nvsim),
         090 (Lindblad extension, conditional), 091 (sub-THz radar research),
         092 (this dashboard), 093 (UX gap analysis).</p>
-      <p>This dashboard is one of several RuView demos. Sibling demos at
-        <code>github.io/RuView/</code> include the Observatory and Pose Fusion views.</p>
+      <p>This dashboard is one of several AetherSense demos. Sibling demos at
+        <code>github.io/AetherSense/</code> include the Observatory and Pose Fusion views.</p>
     `;
   }
 

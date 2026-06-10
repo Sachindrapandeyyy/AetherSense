@@ -2,7 +2,7 @@ name: Point Cloud Viewer → GitHub Pages
 
 # Publishes the live 3D point cloud viewer to gh-pages/pointcloud/.
 # The viewer defaults to a synthetic in-browser demo; users can append
-# ?backend=<url> or ?backend=auto to point it at a real ruview-pointcloud
+# ?backend=<url> or ?backend=auto to point it at a real aethersense-pointcloud
 # server (CORS-permitting host required). See ADR-094.
 #
 # Uses keep_files: true to preserve the existing observatory/, pose-fusion/,
@@ -36,18 +36,18 @@ jobs:
           cp v2/crates/wifi-densepose-pointcloud/src/viewer.html _site/pointcloud/index.html
           # Drop a tiny README so direct browsers of the directory get context.
           cat > _site/pointcloud/README.md <<'EOF'
-          # RuView — Live 3D Point Cloud Viewer
+          # AetherSense — Live 3D Point Cloud Viewer
 
-          Hosted at: https://ruvnet.github.io/RuView/pointcloud/
+          Hosted at: https://ruvnet.github.io/AetherSense/pointcloud/
 
           ## Modes
 
           - Default — synthetic in-browser demo (no backend, no network calls).
           - `?backend=auto` — fetch from `/api/splats` on the same origin
-            (only works when the viewer is served by `ruview-pointcloud serve`).
+            (only works when the viewer is served by `aethersense-pointcloud serve`).
           - `?backend=<url>` — fetch from `<url>/api/splats`. The intended
             local-ESP32 use is `?backend=http://127.0.0.1:9880`: run
-            `ruview-pointcloud serve --bind 127.0.0.1:9880` on the same
+            `aethersense-pointcloud serve --bind 127.0.0.1:9880` on the same
             machine with your ESP32 streaming CSI to UDP port 3333, then
             visit the URL above. The local server's CorsLayer permits
             requests from `https://ruvnet.github.io`, and modern browsers

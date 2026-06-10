@@ -1,6 +1,6 @@
 [package]
 name = "wifi-densepose-worldgraph"
-description = "ADR-139 — WorldGraph environmental digital twin (typed petgraph) for RuView"
+description = "ADR-139 — WorldGraph environmental digital twin (typed petgraph) for AetherSense"
 version = "0.3.0"
 edition.workspace = true
 authors.workspace = true

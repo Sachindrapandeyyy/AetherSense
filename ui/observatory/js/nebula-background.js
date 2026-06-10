@@ -1,6 +1,6 @@
 /**
  * Room Atmosphere Background — Warm dark gradient with subtle particles
- * Matches RuView Foundation aesthetic: deep blue-black with warm undertones
+ * Matches AetherSense Foundation aesthetic: deep blue-black with warm undertones
  */
 import * as THREE from 'three';
 

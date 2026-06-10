@@ -57,7 +57,7 @@ pub async fn fetch_roads(center: &GeoPoint, radius_m: f64) -> Result<Vec<OsmFeat
 async fn overpass_query(query: &str) -> Result<serde_json::Value> {
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(15))
-        .user_agent("RuView/0.1")
+        .user_agent("AetherSense/0.1")
         .build()?;
 
     let resp = client

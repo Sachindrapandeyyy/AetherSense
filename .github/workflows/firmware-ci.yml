@@ -5,7 +5,7 @@ on:
     branches:
       - '**'
     tags:
-      # ESP32 firmware release tags — build + version-consistency guard (RuView#505).
+      # ESP32 firmware release tags — build + version-consistency guard (AetherSense#505).
       - 'v*-esp32'
     paths:
       - 'firmware/**'
@@ -32,7 +32,7 @@ jobs:
           echo "Tag: $TAG  →  expected version.txt: $EXPECTED  |  actual: $ACTUAL"
           if [ "$EXPECTED" != "$ACTUAL" ]; then
             echo "::error::firmware/esp32-csi-node/version.txt is '$ACTUAL' but tag '$TAG' expects '$EXPECTED'."
-            echo "::error::Bump version.txt and re-tag so esp_app_get_description()->version is correct (RuView#505)."
+            echo "::error::Bump version.txt and re-tag so esp_app_get_description()->version is correct (AetherSense#505)."
             exit 1
           fi
           echo "version.txt matches the release tag."

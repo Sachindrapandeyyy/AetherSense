@@ -436,9 +436,107 @@ pub struct RvfReader {
     raw_size: usize,
 }
 
-impl RvfReader {
+    /// Parse an RVF container from a JSONL byte slice.
+    pub fn from_jsonl_bytes(data: &[u8]) -> Result<Self, String> {
+        let text = std::str::from_utf8(data).map_err(|e| format!("invalid UTF-8 in JSONL: {e}"))?;
+        let mut segments = Vec::new();
+        let mut next_id = 0u64;
+
+        for (line_num, line) in text.lines().enumerate() {
+            let trimmed = line.trim();
+            if trimmed.is_empty() {
+                continue;
+            }
+
+            let val: serde_json::Value = serde_json::from_str(trimmed)
+                .map_err(|e| format!("line {}: invalid JSON: {e}", line_num + 1))?;
+
+            let ty_val = val.get("ty")
+                .or_else(|| val.get("type"))
+                .ok_or_else(|| format!("line {}: missing 'ty' or 'type' field", line_num + 1))?;
+
+            let seg_type = match ty_val {
+                serde_json::Value::Number(n) => n.as_u64().ok_or_else(|| format!("line {}: invalid segment type", line_num + 1))? as u8,
+                serde_json::Value::String(s) => match s.as_str() {
+                    "vec" => SEG_VEC,
+                    "manifest" => SEG_MANIFEST,
+                    "quant" => SEG_QUANT,
+                    "meta" => SEG_META,
+                    "witness" => SEG_WITNESS,
+                    "profile" => SEG_PROFILE,
+                    "embed" => SEG_EMBED,
+                    "lora" => SEG_LORA,
+                    "index" => 0x02,
+                    "overlay" => 0x03,
+                    "crypto" => 0x0C,
+                    "wasm" => 0x10,
+                    "dashboard" => 0x11,
+                    "aggregate_weights" => 0x36,
+                    other => return Err(format!("line {}: unknown segment type name '{}'", line_num + 1, other)),
+                },
+                _ => return Err(format!("line {}: 'ty' must be a string or number", line_num + 1)),
+            };
+
+            let payload_val = val.get("payload")
+                .or_else(|| val.get("data"))
+                .ok_or_else(|| format!("line {}: missing 'payload' or 'data' field", line_num + 1))?;
+
+            let payload_bytes = match seg_type {
+                SEG_VEC => {
+                    if let serde_json::Value::Array(arr) = payload_val {
+                        let mut bytes = Vec::with_capacity(arr.len() * 4);
+                        for item in arr {
+                            let f = item.as_f64().ok_or_else(|| format!("line {}: weights must be numbers", line_num + 1))? as f32;
+                            bytes.extend_from_slice(&f.to_le_bytes());
+                        }
+                        bytes
+                    } else {
+                        return Err(format!("line {}: weights payload must be an array of floats", line_num + 1));
+                    }
+                }
+                _ => {
+                    match payload_val {
+                        serde_json::Value::Object(_) | serde_json::Value::Array(_) => {
+                            serde_json::to_vec(payload_val).map_err(|e| format!("line {}: serialize payload: {e}", line_num + 1))?
+                        }
+                        serde_json::Value::String(s) => s.as_bytes().to_vec(),
+                        _ => serde_json::to_vec(payload_val).map_err(|e| format!("line {}: serialize payload: {e}", line_num + 1))?,
+                    }
+                }
+            };
+
+            let content_hash = crc32_content_hash(&payload_bytes);
+            let header = SegmentHeader {
+                magic: SEGMENT_MAGIC,
+                version: SEGMENT_VERSION,
+                seg_type,
+                flags: 0,
+                segment_id: next_id,
+                payload_length: payload_bytes.len() as u64,
+                timestamp_ns: 0,
+                checksum_algo: 0,
+                compression: 0,
+                reserved_0: 0,
+                reserved_1: 0,
+                content_hash,
+                uncompressed_len: 0,
+                alignment_pad: 0,
+            };
+            next_id += 1;
+            segments.push((header, payload_bytes));
+        }
+
+        Ok(Self {
+            segments,
+            raw_size: data.len(),
+        })
+    }
+
     /// Parse an RVF container from a byte slice.
     pub fn from_bytes(data: &[u8]) -> Result<Self, String> {
+        if data.first() == Some(&b'{') {
+            return Self::from_jsonl_bytes(data);
+        }
         let mut segments = Vec::new();
         let mut offset = 0;
 
@@ -1103,4 +1201,26 @@ mod tests {
         let d3 = reader.lora_profile("outdoor").unwrap();
         assert_eq!(d3, w3);
     }
+
+    #[test]
+    fn test_jsonl_parser_round_trip() {
+        let jsonl_content = r#"
+{"ty": "manifest", "payload": {"model_id": "test-jsonl-model", "version": "1.2.3", "description": "JSONL test"}}
+{"ty": "vec", "payload": [1.0, -2.5, 3.14]}
+{"ty": "meta", "payload": {"input_dim": 56}}
+"#;
+        let reader = RvfReader::from_bytes(jsonl_content.as_bytes()).expect("failed to parse JSONL");
+        assert_eq!(reader.segment_count(), 3);
+        
+        let manifest = reader.manifest().unwrap();
+        assert_eq!(manifest["model_id"], "test-jsonl-model");
+        assert_eq!(manifest["version"], "1.2.3");
+        
+        let weights = reader.weights().unwrap();
+        assert_eq!(weights, vec![1.0, -2.5, 3.14]);
+        
+        let meta = reader.metadata().unwrap();
+        assert_eq!(meta["input_dim"], 56);
+    }
 }
+

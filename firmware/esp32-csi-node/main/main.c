@@ -410,7 +410,7 @@ void app_main(void)
     }
 #endif
 
-    /* RuView#893/#521: the MGMT-only promiscuous filter (set in
+    /* AetherSense#893/#521: the MGMT-only promiscuous filter (set in
      * csi_collector_init as the #396 display-crash workaround) starves the CSI
      * callback on display-less boards — yield collapses to 0 pps and the node
      * looks dead despite being on the network. Now that the display probe has

@@ -64,7 +64,7 @@ export class ThemeToggle {
 
   getSavedTheme() {
     try {
-      return localStorage.getItem('ruview-theme');
+      return localStorage.getItem('aethersense-theme');
     } catch {
       return null;
     }
@@ -72,7 +72,7 @@ export class ThemeToggle {
 
   saveTheme(theme) {
     try {
-      localStorage.setItem('ruview-theme', theme);
+      localStorage.setItem('aethersense-theme', theme);
     } catch {
       // localStorage not available
     }

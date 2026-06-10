@@ -50,7 +50,7 @@ pub mod error;
 pub mod eval;
 pub mod geometry;
 pub mod rapid_adapt;
-pub mod ruview_metrics;
+pub mod aethersense_metrics;
 pub mod signal_features;
 pub mod subcarrier;
 pub mod virtual_aug;

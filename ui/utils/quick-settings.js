@@ -122,7 +122,7 @@ export class QuickSettings {
     });
 
     this.panel.querySelector('#qs-reset-tour').addEventListener('click', () => {
-      try { localStorage.removeItem('ruview-onboarding-done'); } catch { /* noop */ }
+      try { localStorage.removeItem('aethersense-onboarding-done'); } catch { /* noop */ }
       this.close();
       document.dispatchEvent(new CustomEvent('start-onboarding'));
     });
@@ -175,12 +175,12 @@ export class QuickSettings {
   }
 
   getSetting(key) {
-    try { return JSON.parse(localStorage.getItem(`ruview-setting-${key}`)); }
+    try { return JSON.parse(localStorage.getItem(`aethersense-setting-${key}`)); }
     catch { return null; }
   }
 
   saveSetting(key, value) {
-    try { localStorage.setItem(`ruview-setting-${key}`, JSON.stringify(value)); }
+    try { localStorage.setItem(`aethersense-setting-${key}`, JSON.stringify(value)); }
     catch { /* noop */ }
   }
 

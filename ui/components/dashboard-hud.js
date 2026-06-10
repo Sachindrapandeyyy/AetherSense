@@ -1,4 +1,4 @@
-// Dashboard HUD Overlay - WiFi DensePose 3D Visualization
+// Dashboard HUD Overlay - AetherSense 3D Visualization
 // Connection status, FPS counter, detection confidence, person count, sensing mode
 
 export class DashboardHUD {
@@ -300,7 +300,7 @@ export class DashboardHUD {
       <div class="hud-bottom-right">
         <div class="hud-mode-badge mock" id="hud-mode-badge">MOCK</div>
         <div class="hud-row" style="margin-top: 4px;">
-          <span class="hud-label">WiFi DensePose</span>
+          <span class="hud-label">AetherSense</span>
         </div>
       </div>
 

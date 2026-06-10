@@ -18,6 +18,7 @@ export class SensingTab {
     this._unsubState = null;
     this._resizeObserver = null;
     this._threeLoaded = false;
+    this._csiHistory = [];
   }
 
   async init() {
@@ -117,9 +118,18 @@ export class SensingTab {
           </div>
 
           <!-- Node Status -->
+          <!-- Node Status -->
           <div class="sensing-card" id="sensingNodeCards">
             <div class="sensing-card-title">NODE STATUS</div>
             <div id="nodeStatusContainer"></div>
+          </div>
+          
+          <!-- CSI Spectrogram -->
+          <div class="sensing-card">
+            <div class="sensing-card-title">CSI Spectrogram</div>
+            <div class="sensing-spectrogram-container" style="margin-top: 10px; position: relative;">
+              <canvas id="sensingSpectrogram" width="200" height="120" style="width: 100%; height: 120px; background: #111; border-radius: 4px; display: block;"></canvas>
+            </div>
           </div>
 
           <!-- Extra info -->
@@ -202,6 +212,11 @@ export class SensingTab {
 
     // Update per-node panels
     this._updateNodePanels(data);
+
+    // Update Spectrogram
+    if (data.nodes && data.nodes.length > 0 && data.nodes[0].amplitude) {
+      this._updateSpectrogram(data.nodes[0].amplitude);
+    }
   }
 
   _onStateChange(state) {
@@ -371,6 +386,42 @@ export class SensingTab {
       row.appendChild(metricsCol);
       row.appendChild(classCol);
       container.appendChild(row);
+    }
+  }
+
+  _updateSpectrogram(amplitude) {
+    if (!amplitude || amplitude.length === 0) return;
+    
+    // Add to rolling history of max 100 entries
+    this._csiHistory.push(amplitude);
+    if (this._csiHistory.length > 100) {
+      this._csiHistory.shift();
+    }
+    
+    const canvas = this.container.querySelector('#sensingSpectrogram');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    
+    const len = this._csiHistory.length;
+    const colW = w / 100;
+    const subH = h / amplitude.length;
+    
+    for (let i = 0; i < len; i++) {
+      const amp = this._csiHistory[i];
+      const x = (i / 100) * w;
+      for (let s = 0; s < amp.length; s++) {
+        const val = amp[s] || 0.0;
+        // Normalize value (clamp between 0.0 and 3.0)
+        const norm = Math.min(1.0, Math.max(0.0, val / 3.0));
+        // Map to HSL: hue goes from 240 (blue) to 0 (red/orange)
+        const hue = 240 - (norm * 240);
+        ctx.fillStyle = `hsl(${hue}, 80%, 45%)`;
+        const y = h - (s * subH) - subH;
+        ctx.fillRect(x, y, colW + 0.5, subH + 0.5); // Add 0.5 overlap to avoid gaps
+      }
     }
   }
 
