@@ -817,5 +817,81 @@ export class HudController {
         ctx.fillText(`P${i}`, px + 7, pz - 4);
       }
     }
+    
+    // 7. Draw Compass Widget in top-right corner
+    const ccx = w - 24;
+    const ccy = 24;
+    const cr = 14;
+    
+    // Draw outer compass ring
+    ctx.strokeStyle = 'rgba(0, 216, 120, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(ccx, ccy, cr, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Draw ticks
+    ctx.strokeStyle = 'rgba(0, 216, 120, 0.2)';
+    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
+      ctx.beginPath();
+      ctx.moveTo(ccx + Math.sin(angle) * (cr - 2), ccy + Math.cos(angle) * (cr - 2));
+      ctx.lineTo(ccx + Math.sin(angle) * cr, ccy + Math.cos(angle) * cr);
+      ctx.stroke();
+    }
+    
+    // Draw cardinal direction texts
+    ctx.fillStyle = 'rgba(232, 236, 224, 0.7)';
+    ctx.font = 'bold 6px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('N', ccx, ccy - cr + 4);
+    ctx.fillText('S', ccx, ccy + cr - 4);
+    ctx.fillText('E', ccx + cr - 4, ccy);
+    ctx.fillText('W', ccx - cr + 4, ccy);
+    
+    // Draw needle if primary person is present
+    if (persons.length > 0 && persons[0].facing !== undefined) {
+      const facing = persons[0].facing;
+      const nx = ccx + Math.sin(facing) * (cr - 3);
+      const ny = ccy + Math.cos(facing) * (cr - 3);
+      
+      // Needle line
+      ctx.strokeStyle = '#ff7020';
+      ctx.lineWidth = 1.5;
+      ctx.shadowBlur = 2;
+      ctx.shadowColor = '#ff7020';
+      ctx.beginPath();
+      ctx.moveTo(ccx, ccy);
+      ctx.lineTo(nx, ny);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      
+      // Center pivot dot
+      ctx.fillStyle = '#ff7020';
+      ctx.beginPath();
+      ctx.arc(ccx, ccy, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Heading degree text below compass
+      const deg = Math.round(((facing * 180 / Math.PI) % 360 + 360) % 360);
+      ctx.fillStyle = '#ff7020';
+      ctx.font = '7px monospace';
+      ctx.fillText(`${deg}°`, ccx, ccy + cr + 8);
+    } else {
+      // Offline/Default state needle pointing North (0 radians)
+      ctx.strokeStyle = 'rgba(232, 236, 224, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(ccx, ccy);
+      ctx.lineTo(ccx, ccy - cr + 3);
+      ctx.stroke();
+      
+      ctx.fillStyle = 'rgba(232, 236, 224, 0.4)';
+      ctx.font = '7px monospace';
+      ctx.fillText('OFF', ccx, ccy + cr + 8);
+    }
+    
+    // Restore default text settings
+    ctx.textBaseline = 'alphabetic';
   }
 }
