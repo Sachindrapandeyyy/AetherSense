@@ -94,214 +94,7 @@ class WifiCollector(Protocol):
     def sample_rate_hz(self) -> float: ...
 
 
-# ---------------------------------------------------------------------------
-# Linux WiFi collector (real hardware)
-# ---------------------------------------------------------------------------
 
-class LinuxWifiCollector:
-    """
-    Collects real RSSI data from a Linux WiFi interface.
-
-    Data sources:
-        - /proc/net/wireless  (RSSI, noise, link quality)
-        - iw dev <iface> station dump  (TX/RX bytes, retry count)
-
-    Parameters
-    ----------
-    interface : str
-        WiFi interface name, e.g. ``"wlan0"``.
-    sample_rate_hz : float
-        Target sampling rate in Hz (default 10).
-    buffer_seconds : int
-        How many seconds of history to keep in the ring buffer (default 120).
-    """
-
-    def __init__(
-        self,
-        interface: str = "wlan0",
-        sample_rate_hz: float = 10.0,
-        buffer_seconds: int = 120,
-    ) -> None:
-        self._interface = interface
-        self._rate = sample_rate_hz
-        self._buffer = RingBuffer(max_size=int(sample_rate_hz * buffer_seconds))
-        self._running = False
-        self._thread: Optional[threading.Thread] = None
-
-    # -- public API ----------------------------------------------------------
-
-    @property
-    def sample_rate_hz(self) -> float:
-        return self._rate
-
-    def start(self) -> None:
-        """Start the background sampling thread."""
-        if self._running:
-            return
-        self._validate_interface()
-        self._running = True
-        self._thread = threading.Thread(
-            target=self._sample_loop, daemon=True, name="wifi-rssi-collector"
-        )
-        self._thread.start()
-        logger.info(
-            "LinuxWifiCollector started on %s at %.1f Hz",
-            self._interface,
-            self._rate,
-        )
-
-    def stop(self) -> None:
-        """Stop the background sampling thread."""
-        self._running = False
-        if self._thread is not None:
-            self._thread.join(timeout=2.0)
-            self._thread = None
-        logger.info("LinuxWifiCollector stopped")
-
-    def get_samples(self, n: Optional[int] = None) -> List[WifiSample]:
-        """
-        Return collected samples.
-
-        Parameters
-        ----------
-        n : int or None
-            If given, return only the most recent *n* samples.
-        """
-        if n is not None:
-            return self._buffer.get_last_n(n)
-        return self._buffer.get_all()
-
-    def collect_once(self) -> WifiSample:
-        """Collect a single sample right now (blocking)."""
-        return self._read_sample()
-
-    # -- availability check --------------------------------------------------
-
-    @classmethod
-    def is_available(cls, interface: str = "wlan0") -> tuple[bool, str]:
-        """Check if Linux WiFi collection is possible without raising.
-
-        Returns
-        -------
-        (available, reason) : tuple[bool, str]
-            ``available`` is True when /proc/net/wireless exists and lists
-            the requested interface.  ``reason`` is a human-readable
-            explanation when unavailable.
-        """
-        if not os.path.exists("/proc/net/wireless"):
-            return False, (
-                "/proc/net/wireless not found. "
-                "This environment has no Linux wireless subsystem "
-                "(common in Docker, WSL, or headless servers)."
-            )
-        try:
-            with open("/proc/net/wireless", "r") as f:
-                content = f.read()
-        except OSError as exc:
-            return False, f"Cannot read /proc/net/wireless: {exc}"
-
-        if interface not in content:
-            names = cls._parse_interface_names(content)
-            return False, (
-                f"Interface '{interface}' not listed in /proc/net/wireless. "
-                f"Available: {names or '(none)'}. "
-                f"Ensure the interface is up and associated with an AP."
-            )
-        return True, "ok"
-
-    # -- internals -----------------------------------------------------------
-
-    def _validate_interface(self) -> None:
-        """Check that the interface exists on this machine."""
-        available, reason = self.is_available(self._interface)
-        if not available:
-            raise RuntimeError(reason)
-
-    @staticmethod
-    def _parse_interface_names(proc_content: str) -> List[str]:
-        """Extract interface names from /proc/net/wireless content."""
-        names: List[str] = []
-        for line in proc_content.splitlines()[2:]:  # skip header lines
-            parts = line.split(":")
-            if len(parts) >= 2:
-                names.append(parts[0].strip())
-        return names
-
-    def _sample_loop(self) -> None:
-        interval = 1.0 / self._rate
-        while self._running:
-            t0 = time.monotonic()
-            try:
-                sample = self._read_sample()
-                self._buffer.append(sample)
-            except Exception:
-                logger.exception("Error reading WiFi sample")
-            elapsed = time.monotonic() - t0
-            sleep_time = max(0.0, interval - elapsed)
-            if sleep_time > 0:
-                time.sleep(sleep_time)
-
-    def _read_sample(self) -> WifiSample:
-        """Read one sample from the OS."""
-        rssi, noise, quality = self._read_proc_wireless()
-        tx_bytes, rx_bytes, retries = self._read_iw_station()
-        return WifiSample(
-            timestamp=time.time(),
-            rssi_dbm=rssi,
-            noise_dbm=noise,
-            link_quality=quality,
-            tx_bytes=tx_bytes,
-            rx_bytes=rx_bytes,
-            retry_count=retries,
-            interface=self._interface,
-        )
-
-    def _read_proc_wireless(self) -> tuple[float, float, float]:
-        """Parse /proc/net/wireless for the configured interface."""
-        try:
-            with open("/proc/net/wireless", "r") as f:
-                for line in f:
-                    if self._interface in line:
-                        # Format: iface: status quality signal noise ...
-                        parts = line.split()
-                        # parts[0] = "wlan0:", parts[2]=quality, parts[3]=signal, parts[4]=noise
-                        quality_raw = float(parts[2].rstrip("."))
-                        signal_raw = float(parts[3].rstrip("."))
-                        noise_raw = float(parts[4].rstrip("."))
-                        # Normalise quality to 0..1 (max is typically 70)
-                        quality = min(1.0, max(0.0, quality_raw / 70.0))
-                        return signal_raw, noise_raw, quality
-        except (FileNotFoundError, IndexError, ValueError) as exc:
-            raise RuntimeError(
-                f"Failed to read /proc/net/wireless for {self._interface}: {exc}"
-            ) from exc
-        raise RuntimeError(
-            f"Interface {self._interface} not found in /proc/net/wireless"
-        )
-
-    def _read_iw_station(self) -> tuple[int, int, int]:
-        """Run ``iw dev <iface> station dump`` and parse TX/RX/retries."""
-        try:
-            result = subprocess.run(
-                ["iw", "dev", self._interface, "station", "dump"],
-                capture_output=True,
-                text=True,
-                timeout=2.0,
-            )
-            text = result.stdout
-
-            tx_bytes = self._extract_int(text, r"tx bytes:\s*(\d+)")
-            rx_bytes = self._extract_int(text, r"rx bytes:\s*(\d+)")
-            retries = self._extract_int(text, r"tx retries:\s*(\d+)")
-            return tx_bytes, rx_bytes, retries
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            # iw not installed or timed out -- degrade gracefully
-            return 0, 0, 0
-
-    @staticmethod
-    def _extract_int(text: str, pattern: str) -> int:
-        m = re.search(pattern, text)
-        return int(m.group(1)) if m else 0
 
 
 # ---------------------------------------------------------------------------
@@ -588,6 +381,9 @@ class WindowsWifiCollector:
             if result.returncode != 0:
                 raise RuntimeError(f"netsh wlan query failed with return code {result.returncode}")
             stdout_text = result.stdout
+        except FileNotFoundError as exc:
+            logger.warning("netsh command not found on system: %s", exc)
+            raise RuntimeError("netsh executable not found") from exc
         except Exception as exc:
             logger.warning("Failed to run netsh wlan show interfaces: %s", exc)
             if self._last_sample:
@@ -683,145 +479,14 @@ class WindowsWifiCollector:
         return sample
 
 
-# ---------------------------------------------------------------------------
-# macOS WiFi collector (real hardware via Swift CoreWLAN utility)
-# ---------------------------------------------------------------------------
 
-class MacosWifiCollector:
-    """
-    Collects real RSSI data from a macOS WiFi interface using a Swift utility.
-
-    Data source: A small compiled Swift binary (`mac_wifi`) that polls the
-    CoreWLAN `CWWiFiClient.shared().interface()` at a high rate.
-    """
-
-    def __init__(
-        self,
-        sample_rate_hz: float = 10.0,
-        buffer_seconds: int = 120,
-    ) -> None:
-        self._rate = sample_rate_hz
-        self._buffer = RingBuffer(max_size=int(sample_rate_hz * buffer_seconds))
-        self._running = False
-        self._thread: Optional[threading.Thread] = None
-        self._process: Optional[subprocess.Popen] = None
-        self._interface = "en0"  # CoreWLAN automatically targets the active Wi-Fi interface
-
-        # Compile the Swift utility if the binary doesn't exist
-        import os
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        self.swift_src = os.path.join(base_dir, "mac_wifi.swift")
-        self.swift_bin = os.path.join(base_dir, "mac_wifi")
-
-    # -- public API ----------------------------------------------------------
-
-    @property
-    def sample_rate_hz(self) -> float:
-        return self._rate
-
-    def start(self) -> None:
-        if self._running:
-            return
-        
-        # Ensure binary exists
-        import os
-        if not os.path.exists(self.swift_bin):
-            logger.info("Compiling mac_wifi.swift to %s", self.swift_bin)
-            try:
-                subprocess.run(["swiftc", "-O", "-o", self.swift_bin, self.swift_src], check=True, capture_output=True)
-            except subprocess.CalledProcessError as e:
-                raise RuntimeError(f"Failed to compile macOS WiFi utility: {e.stderr.decode('utf-8')}")
-            except FileNotFoundError:
-                raise RuntimeError("swiftc is not installed. Please install Xcode Command Line Tools to use native macOS WiFi sensing.")
-
-        self._running = True
-        self._thread = threading.Thread(
-            target=self._sample_loop, daemon=True, name="mac-rssi-collector"
-        )
-        self._thread.start()
-        logger.info("MacosWifiCollector started at %.1f Hz", self._rate)
-
-    def stop(self) -> None:
-        self._running = False
-        if self._process:
-            self._process.terminate()
-            try:
-                self._process.wait(timeout=1.0)
-            except subprocess.TimeoutExpired:
-                self._process.kill()
-            self._process = None
-
-        if self._thread is not None:
-            self._thread.join(timeout=2.0)
-            self._thread = None
-        logger.info("MacosWifiCollector stopped")
-
-    def get_samples(self, n: Optional[int] = None) -> List[WifiSample]:
-        if n is not None:
-            return self._buffer.get_last_n(n)
-        return self._buffer.get_all()
-
-    # -- internals -----------------------------------------------------------
-
-    def _sample_loop(self) -> None:
-        import json
-        
-        # Start the Swift binary
-        self._process = subprocess.Popen(
-            [self.swift_bin],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1  # Line buffered
-        )
-
-        while self._running and self._process and self._process.poll() is None:
-            try:
-                line = self._process.stdout.readline()
-                if not line:
-                    continue
-
-                line = line.strip()
-                if not line:
-                    continue
-
-                if line.startswith("{"):
-                    data = json.loads(line)
-                    if "error" in data:
-                        logger.error("macOS WiFi utility error: %s", data["error"])
-                        continue
-
-                    rssi = float(data.get("rssi", -80.0))
-                    noise = float(data.get("noise", -95.0))
-
-                    link_quality = max(0.0, min(1.0, (rssi + 100.0) / 60.0))
-
-                    sample = WifiSample(
-                        timestamp=time.time(),
-                        rssi_dbm=rssi,
-                        noise_dbm=noise,
-                        link_quality=link_quality,
-                        tx_bytes=0,
-                        rx_bytes=0,
-                        retry_count=0,
-                        interface=self._interface,
-                    )
-                    self._buffer.append(sample)
-            except Exception as e:
-                logger.error("Error reading macOS WiFi stream: %s", e)
-                time.sleep(1.0)
-
-        # Process exited unexpectedly
-        if self._running:
-            logger.error("macOS WiFi utility exited unexpectedly. Collector stopped.")
-            self._running = False
 
 
 # ---------------------------------------------------------------------------
 # Collector factory (ADR-049)
 # ---------------------------------------------------------------------------
 
-CollectorType = Union[LinuxWifiCollector, WindowsWifiCollector, MacosWifiCollector, SimulatedCollector]
+CollectorType = Union[WindowsWifiCollector, SimulatedCollector]
 
 
 def create_collector(
@@ -829,29 +494,18 @@ def create_collector(
     interface: str = "wlan0",
     sample_rate_hz: float = 10.0,
 ) -> CollectorType:
-    """Create the best available WiFi collector for the current platform.
-
-    Resolution order (when ``preferred="auto"``):
-      1. Platform-native WiFi:
-         - Linux: LinuxWifiCollector (requires /proc/net/wireless + active interface)
-         - Windows: WindowsWifiCollector (netsh wlan)
-         - macOS: MacosWifiCollector (CoreWLAN)
-      2. SimulatedCollector (always available)
-
-    This function never raises -- it always returns a usable collector.
+    """Create the best available WiFi collector (Windows-native or Simulated fallback).
 
     Parameters
     ----------
     preferred : str
-        ``"auto"`` for platform detection, or one of ``"linux"``,
-        ``"windows"``, ``"macos"``, ``"simulated"`` to force a specific
-        collector.
+        ``"auto"`` or ``"windows"`` for native Windows tracking, or ``"simulated"`` to force simulated signals.
     interface : str
-        WiFi interface name (Linux/Windows only).
+        WiFi interface name.
     sample_rate_hz : float
-        Target sampling rate.
+        Target sampling rate (capped at 2.0 Hz for Windows netsh).
     """
-    _VALID_PREFERRED = {"auto", "linux", "windows", "macos", "simulated"}
+    _VALID_PREFERRED = {"auto", "windows", "simulated"}
     if preferred not in _VALID_PREFERRED:
         logger.warning(
             "WiFi collector: unknown preferred=%r (valid: %s). Falling back to auto.",
@@ -861,14 +515,8 @@ def create_collector(
 
     system = platform.system()
 
-    if preferred == "auto":
-        if system == "Linux":
-            available, reason = LinuxWifiCollector.is_available(interface)
-            if available:
-                logger.info("WiFi collector: using LinuxWifiCollector on %s", interface)
-                return LinuxWifiCollector(interface=interface, sample_rate_hz=sample_rate_hz)
-            logger.warning("WiFi collector: LinuxWifiCollector unavailable (%s).", reason)
-        elif system == "Windows":
+    if preferred in ("auto", "windows"):
+        if system == "Windows":
             try:
                 win_iface = interface if interface != "wlan0" else "Wi-Fi"
                 if win_iface == "Wi-Fi":
@@ -893,24 +541,8 @@ def create_collector(
                 return collector
             except Exception as exc:
                 logger.warning("WiFi collector: WindowsWifiCollector unavailable (%s).", exc)
-        elif system == "Darwin":
-            try:
-                collector = MacosWifiCollector(sample_rate_hz=sample_rate_hz)
-                logger.info("WiFi collector: using MacosWifiCollector")
-                return collector
-            except Exception as exc:
-                logger.warning("WiFi collector: MacosWifiCollector unavailable (%s).", exc)
-    elif preferred == "linux":
-        return LinuxWifiCollector(interface=interface, sample_rate_hz=sample_rate_hz)
-    elif preferred == "windows":
-        return WindowsWifiCollector(interface=interface, sample_rate_hz=min(sample_rate_hz, 2.0))
-    elif preferred == "macos":
-        return MacosWifiCollector(sample_rate_hz=sample_rate_hz)
-    elif preferred == "simulated":
-        return SimulatedCollector(seed=42, sample_rate_hz=sample_rate_hz)
+        else:
+            logger.warning("WiFi collector: platform '%s' not supported for native WiFi RSSI tracking. Falling back to SimulatedCollector.", system)
 
-    logger.info(
-        "WiFi collector: falling back to SimulatedCollector. "
-        "For real sensing, connect ESP32 nodes via UDP:5005 or install platform WiFi drivers."
-    )
+    logger.info("WiFi collector: using SimulatedCollector.")
     return SimulatedCollector(seed=42, sample_rate_hz=sample_rate_hz)
