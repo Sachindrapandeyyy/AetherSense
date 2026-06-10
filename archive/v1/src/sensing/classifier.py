@@ -18,6 +18,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional
 
+import numpy as np
+
 from v1.src.sensing.feature_extractor import RssiFeatures
 
 logger = logging.getLogger(__name__)
@@ -83,6 +85,47 @@ class PresenceClassifier:
         self._var_thresh = presence_variance_threshold
         self._motion_thresh = motion_energy_threshold
         self._max_receivers = max_receivers
+        self._calibration_samples: List[float] = []
+        self._is_calibrating: bool = False
+        self._calibration_progress: float = 0.0
+        self._calibration_target: int = 20
+
+    def start_calibration(self) -> None:
+        """Start dynamic background threshold calibration."""
+        self._calibration_samples = []
+        self._is_calibrating = True
+        self._calibration_progress = 0.0
+        logger.info("Adaptive calibration started. Please keep the room empty...")
+
+    def update_calibration(self, variance: float) -> bool:
+        """
+        Add a variance sample during active calibration.
+        Returns True if calibration completes in this step.
+        """
+        if not self._is_calibrating:
+            return False
+        self._calibration_samples.append(variance)
+        n_samples = len(self._calibration_samples)
+        self._calibration_progress = min(1.0, n_samples / self._calibration_target)
+        
+        if n_samples >= self._calibration_target:
+            samples_arr = np.array(self._calibration_samples, dtype=np.float64)
+            mean_var = np.mean(samples_arr)
+            std_var = np.std(samples_arr, ddof=1) if len(samples_arr) > 1 else 0.0
+            
+            # Set target threshold: mean_variance + 3.0 * standard_deviation
+            # Capped between a minimum threshold of 0.15 and a maximum of 2.0
+            new_thresh = mean_var + 3.0 * std_var
+            self._var_thresh = float(max(0.15, min(2.0, new_thresh)))
+            
+            self._is_calibrating = False
+            logger.info(
+                "Adaptive calibration complete. Baseline mean variance: %.4f, std: %.4f. "
+                "Dynamic Presence Variance Threshold set to: %.4f",
+                mean_var, std_var, self._var_thresh
+            )
+            return True
+        return False
 
     @property
     def presence_variance_threshold(self) -> float:

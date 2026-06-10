@@ -88,6 +88,16 @@ class RssiFeatureExtractor:
     def window_seconds(self) -> float:
         return self._window_seconds
 
+    @staticmethod
+    def _apply_median_filter(rssi: NDArray[np.float64]) -> NDArray[np.float64]:
+        """Apply a 3-point rolling median filter to remove single-sample spikes."""
+        if len(rssi) < 3:
+            return rssi
+        filtered = np.copy(rssi)
+        stacked = np.vstack([rssi[:-2], rssi[1:-1], rssi[2:]])
+        filtered[1:-1] = np.median(stacked, axis=0)
+        return filtered
+
     def extract(self, samples: List[WifiSample]) -> RssiFeatures:
         """
         Extract features from a list of WifiSample objects.
@@ -108,6 +118,9 @@ class RssiFeatureExtractor:
         rssi = np.array([s.rssi_dbm for s in samples], dtype=np.float64)
         timestamps = np.array([s.timestamp for s in samples], dtype=np.float64)
 
+        # Apply median filter for noise de-spiking
+        filtered_rssi = self._apply_median_filter(rssi)
+
         # Estimate sample rate from actual timestamps
         dt = np.diff(timestamps)
         if len(dt) == 0 or np.mean(dt) <= 0:
@@ -124,9 +137,10 @@ class RssiFeatureExtractor:
             sample_rate_hz=float(sample_rate),
         )
 
-        self._compute_time_domain(rssi, features)
-        self._compute_frequency_domain(rssi, sample_rate, features)
-        self._compute_change_points(rssi, features)
+        self._compute_time_domain(filtered_rssi, features)
+        features.mean = float(np.mean(rssi))  # keep raw mean for connection baseline
+        self._compute_frequency_domain(filtered_rssi, sample_rate, features)
+        self._compute_change_points(filtered_rssi, features)
 
         return features
 
@@ -154,9 +168,12 @@ class RssiFeatureExtractor:
             sample_rate_hz=float(sample_rate_hz),
         )
 
-        self._compute_time_domain(rssi, features)
-        self._compute_frequency_domain(rssi, sample_rate_hz, features)
-        self._compute_change_points(rssi, features)
+        filtered_rssi = self._apply_median_filter(rssi)
+
+        self._compute_time_domain(filtered_rssi, features)
+        features.mean = float(np.mean(rssi))
+        self._compute_frequency_domain(filtered_rssi, sample_rate_hz, features)
+        self._compute_change_points(filtered_rssi, features)
 
         return features
 
