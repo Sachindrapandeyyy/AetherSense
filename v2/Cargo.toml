@@ -14,8 +14,10 @@ members = [
     #   - DB:      no persistent state; system is real-time
     # If we ever need any of these as a published surface, they can be
     # reintroduced with a real implementation.
+    "crates/wifi-densepose-hardware",
     "crates/wifi-densepose-wasm",
     "crates/wifi-densepose-cli",
+    "crates/wifi-densepose-mat",
     "crates/wifi-densepose-train",
     "crates/wifi-densepose-sensing-server",
     "crates/wifi-densepose-wifiscan",
@@ -68,6 +70,7 @@ members = [
     "crates/homecore-hap",         # ADR-125 — Apple Home HomeKit Accessory Protocol bridge
     "crates/homecore-assist",      # ADR-133 — HOMECORE voice assistant + ruflo bridge
     "crates/homecore-server",      # iter-9 — HOMECORE integration binary (all 8 crates wired together)
+    "crates/aethersense-swarm",                         # ADR-148 — drone swarm control system
 ]
 # ADR-040: WASM edge crate targets wasm32-unknown-unknown (no_std),
 # excluded from workspace to avoid breaking `cargo test --workspace`.
