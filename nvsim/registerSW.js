@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/AetherSense/nvsim/sw.js', { scope: '/AetherSense/nvsim/' })})}
