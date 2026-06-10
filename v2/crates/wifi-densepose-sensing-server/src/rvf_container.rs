@@ -436,6 +436,7 @@ pub struct RvfReader {
     raw_size: usize,
 }
 
+impl RvfReader {
     /// Parse an RVF container from a JSONL byte slice.
     pub fn from_jsonl_bytes(data: &[u8]) -> Result<Self, String> {
         let text = std::str::from_utf8(data).map_err(|e| format!("invalid UTF-8 in JSONL: {e}"))?;
