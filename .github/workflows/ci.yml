@@ -83,6 +83,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Free Disk Space
+      run: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /opt/ghc
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf /usr/share/swift
+        df -h
+
     # `wifi-densepose-desktop` is a Tauri v2 app — `glib-sys`, `gtk-sys`,
     # `webkit2gtk-sys`, etc. need the Linux dev libraries via pkg-config or the
     # workspace test fails at the build step before any test runs (every recent
