@@ -35,11 +35,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Determine registry
+        id: registry
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "image=ghcr.io/${OWNER}/nvsim-server" >> $GITHUB_OUTPUT
+          echo "owner=${OWNER}" >> $GITHUB_OUTPUT
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/ruvnet/nvsim-server
+          images: ${{ steps.registry.outputs.image }}
           tags: |
             type=ref,event=branch
             type=ref,event=tag
@@ -60,10 +67,10 @@ jobs:
 
       - name: Smoke-test the image
         run: |
-          docker pull ghcr.io/ruvnet/nvsim-server:sha-${GITHUB_SHA::7} || \
-            docker pull ghcr.io/ruvnet/nvsim-server:latest
+          docker pull ${{ steps.registry.outputs.image }}:sha-${GITHUB_SHA::7} || \
+            docker pull ${{ steps.registry.outputs.image }}:latest
           docker run --rm -d --name nvsim-test -p 7878:7878 \
-            ghcr.io/ruvnet/nvsim-server:latest
+            ${{ steps.registry.outputs.image }}:latest
           sleep 4
           curl -fsS http://localhost:7878/api/health
           docker stop nvsim-test
