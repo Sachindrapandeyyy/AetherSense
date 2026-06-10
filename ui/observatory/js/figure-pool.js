@@ -253,6 +253,7 @@ export class FigurePool {
       visible: false,
       prevPositions,
       velocities,
+      smoothedPosition: new THREE.Vector3(0, 0, 0),
       _initialized: false,
       _lastPose: null,
     };
@@ -278,8 +279,26 @@ export class FigurePool {
       const fig = this._figures[f];
       if (f < persons.length && isPresent) {
         const p = persons[f];
-        const kps = this._poseSystem.generateKeypoints(p, elapsed, breathPulse);
-        this.applyKeypoints(fig, kps, breathPulse, p.position || [0, 0, 0], elapsed, p.pose);
+        const targetPos = p.position || [0, 0, 0];
+        
+        // Dynamic Coordinate Damping
+        const damping = this._settings.signalDamping !== undefined ? this._settings.signalDamping : 0.30;
+        if (!fig._initialized) {
+          fig.smoothedPosition.set(targetPos[0], targetPos[1], targetPos[2]);
+        } else {
+          const k = 1 - damping;
+          fig.smoothedPosition.x += (targetPos[0] - fig.smoothedPosition.x) * k;
+          fig.smoothedPosition.y += (targetPos[1] - fig.smoothedPosition.y) * k;
+          fig.smoothedPosition.z += (targetPos[2] - fig.smoothedPosition.z) * k;
+        }
+
+        const smoothedPerson = {
+          ...p,
+          position: [fig.smoothedPosition.x, fig.smoothedPosition.y, fig.smoothedPosition.z]
+        };
+
+        const kps = this._poseSystem.generateKeypoints(smoothedPerson, elapsed, breathPulse);
+        this.applyKeypoints(fig, kps, breathPulse, smoothedPerson.position, elapsed, p.pose);
         fig.visible = true;
       } else {
         if (fig.visible) {
@@ -300,7 +319,7 @@ export class FigurePool {
    * @param {string} pose - Current pose name for aura adaptation
    */
   applyKeypoints(fig, kps, breathPulse, pos, elapsed = 0, pose = 'standing') {
-    const lerpFactor = fig._initialized ? 0.18 : 1.0;
+    const lerpFactor = fig._initialized ? (this._settings.trackingSensitivity !== undefined ? this._settings.trackingSensitivity : 0.18) : 1.0;
 
     // Joints with smooth interpolation and secondary motion
     for (let i = 0; i < 17 && i < kps.length; i++) {

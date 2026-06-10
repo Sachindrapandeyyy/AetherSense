@@ -28,6 +28,7 @@ export const DEFAULTS = {
   field: 0.45, waves: 0.4, ambient: 0.7, reflect: 0.2,
   fov: 50, orbitSpeed: 0.15, grid: true, room: true,
   scenario: 'auto', cycle: 30, dataSource: 'demo', wsUrl: '',
+  trackingSensitivity: 0.18, signalDamping: 0.30, varThresh: 0.50, motionThresh: 0.10,
 };
 
 export const SETTINGS_VERSION = '6';
@@ -229,6 +230,10 @@ export class HudController {
     });
     this._bindRange('opt-orbit-speed', 'orbitSpeed');
     this._bindRange('opt-cycle', 'cycle', v => { obs._demoData.setCycleDuration(v); });
+    this._bindRange('opt-tracking-sensitivity', 'trackingSensitivity');
+    this._bindRange('opt-signal-damping', 'signalDamping');
+    this._bindRange('opt-var-thresh', 'varThresh', () => this._syncBackendSensitivity());
+    this._bindRange('opt-motion-thresh', 'motionThresh', () => this._syncBackendSensitivity());
 
     // Color pickers
     document.getElementById('opt-wire-color').value = s.wireColor;
@@ -342,6 +347,18 @@ export class HudController {
     } catch {}
   }
 
+  _syncBackendSensitivity() {
+    const s = this._obs.settings;
+    if (s.dataSource === 'ws') {
+      const url = s.wsUrl || 'ws://localhost:8765';
+      const httpUrl = url.replace(/^ws/, 'http').replace(/\/ws\/.*$/, '').replace(/\/$/, '') + '/api/v1/sensitivity?var_thresh=' + s.varThresh + '&motion_thresh=' + s.motionThresh;
+      fetch(httpUrl)
+        .then(res => res.json())
+        .then(data => console.log('Sensing backend sensitivity synced:', data))
+        .catch(err => console.warn('Failed to sync backend sensitivity:', err));
+    }
+  }
+
   applyPreset(preset) {
     const obs = this._obs;
     Object.assign(obs.settings, preset);
@@ -352,6 +369,10 @@ export class HudController {
       'opt-bone-thick': 'boneThick', 'opt-joint-size': 'jointSize', 'opt-glow': 'glow', 'opt-trail': 'trail', 'opt-aura': 'aura',
       'opt-field': 'field', 'opt-waves': 'waves', 'opt-ambient': 'ambient', 'opt-reflect': 'reflect',
       'opt-fov': 'fov', 'opt-orbit-speed': 'orbitSpeed', 'opt-cycle': 'cycle',
+      'opt-tracking-sensitivity': 'trackingSensitivity',
+      'opt-signal-damping': 'signalDamping',
+      'opt-var-thresh': 'varThresh',
+      'opt-motion-thresh': 'motionThresh',
     };
     for (const [id, key] of Object.entries(rangeMap)) {
       const el = document.getElementById(id);

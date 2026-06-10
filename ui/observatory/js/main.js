@@ -479,6 +479,7 @@ class Observatory {
       this._ws.onopen = () => {
         console.log('[Observatory] WebSocket connected');
         this._hud.updateSourceBadge('ws', this._ws);
+        this._hud._syncBackendSensitivity();
       };
       this._ws.onmessage = (evt) => { try { this._liveData = JSON.parse(evt.data); } catch {} };
       this._ws.onclose = () => {

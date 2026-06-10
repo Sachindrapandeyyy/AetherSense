@@ -366,6 +366,25 @@ class SensingWebSocketServer:
                     return Response(200, "OK", cors_headers, f'{{"status": "threshold_set", "value": {val}}}\n'.encode('utf-8'))
                 except Exception:
                     return Response(400, "Bad Request", cors_headers, b'{"status": "error", "message": "invalid or missing val parameter"}\n')
+            elif clean_path == "/api/v1/sensitivity":
+                try:
+                    import urllib.parse
+                    import json
+                    query = path.split("?")[1] if "?" in path else ""
+                    params = urllib.parse.parse_qs(query)
+                    response_data = {}
+                    if "var_thresh" in params:
+                        val = float(params["var_thresh"][0])
+                        self.classifier._var_thresh = val
+                        response_data["var_thresh"] = val
+                    if "motion_thresh" in params:
+                        val = float(params["motion_thresh"][0])
+                        self.classifier._motion_thresh = val
+                        response_data["motion_thresh"] = val
+                    logger.info("Updated classifier sensitivity: %s", response_data)
+                    return Response(200, "OK", cors_headers, f'{{"status": "sensitivity_updated", "data": {json.dumps(response_data)}}}\n'.encode('utf-8'))
+                except Exception as exc:
+                    return Response(400, "Bad Request", cors_headers, f'{{"status": "error", "message": "{str(exc)}"}}\n'.encode('utf-8'))
             elif clean_path == "/health/health":
                 return Response(200, "OK", cors_headers, b'{"status": "healthy", "components": {"rssi_collector": "healthy", "classifier": "healthy"}}\n')
             elif clean_path == "/api/v1/info":

@@ -340,6 +340,26 @@
           <span>WS URL</span>
           <input type="text" id="opt-ws-url" value="" placeholder="ws://localhost:3000/ws/sensing">
         </label>
+        <label class="setting-row">
+          <span>Joint Response</span>
+          <input type="range" id="opt-tracking-sensitivity" min="0.05" max="0.95" step="0.05" value="0.18">
+          <span class="range-val" id="opt-tracking-sensitivity-val">0.18</span>
+        </label>
+        <label class="setting-row">
+          <span>Signal Damping</span>
+          <input type="range" id="opt-signal-damping" min="0" max="0.9" step="0.05" value="0.30">
+          <span class="range-val" id="opt-signal-damping-val">0.30</span>
+        </label>
+        <label class="setting-row">
+          <span>Presence Threshold</span>
+          <input type="range" id="opt-var-thresh" min="0.05" max="3.00" step="0.05" value="0.50">
+          <span class="range-val" id="opt-var-thresh-val">0.50</span>
+        </label>
+        <label class="setting-row">
+          <span>Motion Threshold</span>
+          <input type="range" id="opt-motion-thresh" min="0.01" max="0.80" step="0.01" value="0.10">
+          <span class="range-val" id="opt-motion-thresh-val">0.10</span>
+        </label>
         <button id="btn-reset-camera" class="settings-btn">Reset Camera</button>
         <button id="btn-reset-settings" class="settings-btn">Reset to Defaults</button>
         <button id="btn-export-settings" class="settings-btn">Export Settings</button>
