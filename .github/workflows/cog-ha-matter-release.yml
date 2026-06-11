@@ -26,6 +26,8 @@ jobs:
   build-x86_64:
     name: Build x86_64
     runs-on: ubuntu-latest
+    env:
+      SIGNING_KEY: ${{ secrets.COGNITUM_OWNER_SIGNING_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -53,8 +55,6 @@ jobs:
 
       - name: Sign with Ed25519 (gated)
         if: ${{ env.SIGNING_KEY != '' }}
-        env:
-          SIGNING_KEY: ${{ secrets.COGNITUM_OWNER_SIGNING_KEY }}
         working-directory: v2/crates/cog-ha-matter/cog
         run: |
           printf '%s' "$SIGNING_KEY" \
@@ -76,6 +76,8 @@ jobs:
   build-arm:
     name: Build aarch64 (arm)
     runs-on: ubuntu-latest
+    env:
+      SIGNING_KEY: ${{ secrets.COGNITUM_OWNER_SIGNING_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -115,8 +117,6 @@ jobs:
 
       - name: Sign with Ed25519 (gated)
         if: ${{ env.SIGNING_KEY != '' }}
-        env:
-          SIGNING_KEY: ${{ secrets.COGNITUM_OWNER_SIGNING_KEY }}
         working-directory: v2/crates/cog-ha-matter/cog
         run: |
           printf '%s' "$SIGNING_KEY" \

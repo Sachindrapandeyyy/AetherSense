@@ -288,14 +288,18 @@ jobs:
           const deployEnv = '${{ needs.pre-deployment.outputs.deploy_env }}';
           const environmentUrl = deployEnv === 'production' ? 'https://wifi-densepose.com' : 'https://staging.wifi-densepose.com';
           
-          const { data: deployment } = await github.rest.repos.createDeploymentStatus({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            deployment_id: context.payload.deployment.id,
-            state: 'success',
-            environment_url: environmentUrl,
-            description: 'Deployment completed successfully'
-          });
+          if (context.payload.deployment) {
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: context.payload.deployment.id,
+              state: 'success',
+              environment_url: environmentUrl,
+              description: 'Deployment completed successfully'
+            });
+          } else {
+            console.log('No deployment payload found in event context - skipping deployment status update');
+          }
 
   # Notification
   notify:

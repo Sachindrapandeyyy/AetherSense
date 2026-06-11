@@ -174,7 +174,7 @@ jobs:
       uses: docker/build-push-action@v7
       with:
         context: .
-        target: production
+        file: docker/Dockerfile.python
         load: true
         tags: wifi-densepose:scan
         cache-from: type=gha
@@ -401,7 +401,7 @@ jobs:
       continue-on-error: true
       run: |
         # Check for security-related configurations
-        grep -r "X-Frame-Options\|X-Content-Type-Options\|X-XSS-Protection\|Content-Security-Policy" src/ || echo "⚠️ Consider adding security headers"
+        grep -r "X-Frame-Options\|X-Content-Type-Options\|X-XSS-Protection\|Content-Security-Policy" archive/v1/src/ || echo "⚠️ Consider adding security headers"
 
     - name: Validate Kubernetes security contexts
       continue-on-error: true

@@ -67,10 +67,10 @@ jobs:
 
       - name: Smoke-test the image
         run: |
-          docker pull ${{ steps.registry.outputs.image }}:sha-${GITHUB_SHA::7} || \
-            docker pull ${{ steps.registry.outputs.image }}:latest
+          TAG="sha-${GITHUB_SHA::7}"
+          docker pull ${{ steps.registry.outputs.image }}:${TAG}
           docker run --rm -d --name nvsim-test -p 7878:7878 \
-            ${{ steps.registry.outputs.image }}:latest
+            ${{ steps.registry.outputs.image }}:${TAG}
           sleep 4
           curl -fsS http://localhost:7878/api/health
           docker stop nvsim-test

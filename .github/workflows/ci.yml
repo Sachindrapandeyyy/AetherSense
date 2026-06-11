@@ -369,20 +369,23 @@ jobs:
       uses: docker/build-push-action@v7
       with:
         context: .
-        target: production
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
+        file: docker/Dockerfile.rust
+        push: false
+        load: true
+        tags: |
+          ${{ steps.img.outputs.name }}:${{ github.sha }}
+          ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64
 
     - name: Test Docker image
       continue-on-error: true
       run: |
-        docker run --rm -d --name test-container -p 8000:8000 ${{ steps.img.outputs.name }}:${{ github.sha }}
+        docker run --rm -d --name test-container -p 3000:3000 ${{ steps.img.outputs.name }}:${{ github.sha }}
         sleep 10
-        curl -f http://localhost:8000/health || exit 1
+        curl -f http://localhost:3000/health || exit 1
         docker stop test-container
 
     - name: Run container security scan
