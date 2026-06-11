@@ -39,9 +39,16 @@ jobs:
     outputs:
       deploy_env: ${{ steps.determine-env.outputs.environment }}
       image_tag: ${{ steps.determine-tag.outputs.tag }}
+      image_name: ${{ steps.img.outputs.name }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Determine image name
+      id: img
+      run: |
+        IMAGE=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+        echo "name=${{ env.REGISTRY }}/${IMAGE}" >> $GITHUB_OUTPUT
 
     - name: Determine deployment environment
       id: determine-env
@@ -72,7 +79,7 @@ jobs:
 
     - name: Verify image exists
       run: |
-        docker manifest inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.determine-tag.outputs.tag }}
+        docker manifest inspect ${{ steps.img.outputs.name }}:${{ steps.determine-tag.outputs.tag }}
 
   # Deploy to staging
   deploy-staging:
@@ -102,7 +109,7 @@ jobs:
         export KUBECONFIG=kubeconfig
         
         # Update image tag in deployment
-        kubectl set image deployment/wifi-densepose wifi-densepose=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.pre-deployment.outputs.image_tag }} -n wifi-densepose-staging
+        kubectl set image deployment/wifi-densepose wifi-densepose=${{ needs.pre-deployment.outputs.image_name }}:${{ needs.pre-deployment.outputs.image_tag }} -n wifi-densepose-staging
         
         # Wait for rollout to complete
         kubectl rollout status deployment/wifi-densepose -n wifi-densepose-staging --timeout=600s
@@ -159,7 +166,7 @@ jobs:
         
         # Create green deployment
         kubectl patch deployment wifi-densepose -n wifi-densepose -p '{"spec":{"template":{"metadata":{"labels":{"version":"green"}}}}}'
-        kubectl set image deployment/wifi-densepose wifi-densepose=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.pre-deployment.outputs.image_tag }} -n wifi-densepose
+        kubectl set image deployment/wifi-densepose wifi-densepose=${{ needs.pre-deployment.outputs.image_name }}:${{ needs.pre-deployment.outputs.image_tag }} -n wifi-densepose
         
         # Wait for green deployment to be ready
         kubectl rollout status deployment/wifi-densepose -n wifi-densepose --timeout=600s
@@ -306,7 +313,7 @@ jobs:
         text: |
           🚀 Deployment successful!
           Environment: ${{ needs.pre-deployment.outputs.deploy_env }}
-          Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.pre-deployment.outputs.image_tag }}
+          Image: ${{ needs.pre-deployment.outputs.image_name }}:${{ needs.pre-deployment.outputs.image_tag }}
           URL: https://${{ needs.pre-deployment.outputs.deploy_env == 'production' && 'wifi-densepose.com' || 'staging.wifi-densepose.com' }}
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
