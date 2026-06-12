@@ -12,45 +12,45 @@ import { PoseDecoder, KEYPOINT_NAMES } from './pose-decoder.js?v=13';
 import { CanvasRenderer } from './canvas-renderer.js?v=13';
 
 // === MediaPipe State ===
-let mpPose = null;
+let mpHolistic = null;
 let latestMpResults = null;
 let isMpProcessing = false;
 
 function initMediaPipe() {
-  if (typeof Pose === 'undefined') {
-    console.warn('[PoseFusion] MediaPipe Pose library not loaded yet, retrying in 500ms...');
+  if (typeof Holistic === 'undefined') {
+    console.warn('[PoseFusion] MediaPipe Holistic library not loaded yet, retrying in 500ms...');
     setTimeout(initMediaPipe, 500);
     return;
   }
   
   try {
-    mpPose = new Pose({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+    mpHolistic = new Holistic({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`
     });
     
-    mpPose.setOptions({
+    mpHolistic.setOptions({
       modelComplexity: 1,
       smoothLandmarks: true,
-      enableSegmentation: false,
+      refineFaceLandmarks: true,
       minDetectionConfidence: 0.5,
       minTrackingConfidence: 0.5
     });
     
-    mpPose.onResults((results) => {
+    mpHolistic.onResults((results) => {
       latestMpResults = results;
     });
     
-    console.log('[PoseFusion] MediaPipe Pose initialized successfully');
+    console.log('[PoseFusion] MediaPipe Holistic initialized successfully');
   } catch (err) {
-    console.error('[PoseFusion] Failed to initialize MediaPipe Pose:', err);
+    console.error('[PoseFusion] Failed to initialize MediaPipe Holistic:', err);
   }
 }
 
 async function processMediaPipe() {
-  if (!mpPose || isMpProcessing || !videoCapture.isActive || isPaused) return;
+  if (!mpHolistic || isMpProcessing || !videoCapture.isActive || isPaused) return;
   isMpProcessing = true;
   try {
-    await mpPose.send({ image: videoCapture.video });
+    await mpHolistic.send({ image: videoCapture.video });
   } catch (err) {
     console.error('[MediaPipe] Error processing frame:', err);
   } finally {
@@ -453,7 +453,10 @@ function mainLoop(timestamp) {
   renderer.drawSkeleton(skeletonCtx, keypoints, skeletonCanvas.width, skeletonCanvas.height, {
     minConfidence: confidenceThreshold,
     color: mode === 'csi' ? 'amber' : 'green',
-    label: labelMap[mode]
+    label: labelMap[mode],
+    faceLandmarks: (mode !== 'csi' && latestMpResults) ? latestMpResults.faceLandmarks : null,
+    leftHandLandmarks: (mode !== 'csi' && latestMpResults) ? latestMpResults.leftHandLandmarks : null,
+    rightHandLandmarks: (mode !== 'csi' && latestMpResults) ? latestMpResults.rightHandLandmarks : null
   });
 
   // --- Render Embedding Space ---

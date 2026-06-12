@@ -38,7 +38,7 @@ export class CanvasRenderer {
     const glowColor = color === 'amber' ? 'rgba(255,176,32,0.4)' : this.colors.jointGlow;
 
     // Extended keypoint styling
-    const fingerColor = '#ff6ef0';    // Magenta for finger tips
+    const fingerColor = '#ff6ef0';    // Cyber pink/magenta for fingers
     const fingerGlow = 'rgba(255,110,240,0.4)';
     const fingerLimb = 'rgba(255,110,240,0.5)';
     const toeColor = '#6ef0ff';       // Cyan for toes
@@ -46,12 +46,175 @@ export class CanvasRenderer {
 
     ctx.clearRect(0, 0, width, height);
 
+    // 1. Draw Face Mesh (if available)
+    if (opts.faceLandmarks) {
+      const lm = opts.faceLandmarks;
+      
+      // A. Dense Face Mesh Tessellation (subtle glowing triangles)
+      const tesselation = window.FACEMESH_TESSELATION || [];
+      if (tesselation.length > 0) {
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(0, 229, 255, 0.12)';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < tesselation.length; i++) {
+          const conn = tesselation[i];
+          const startIdx = (conn.start !== undefined) ? conn.start : conn[0];
+          const endIdx = (conn.end !== undefined) ? conn.end : conn[1];
+          const start = lm[startIdx];
+          const end = lm[endIdx];
+          if (start && end) {
+            ctx.moveTo(start.x * width, start.y * height);
+            ctx.lineTo(end.x * width, end.y * height);
+          }
+        }
+        ctx.stroke();
+      }
+
+      // B. Face Contours (brow, eyes, nose, lips, boundary)
+      const contours = window.FACEMESH_CONTOURS || [];
+      if (contours.length > 0) {
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(0, 229, 255, 0.45)';
+        ctx.lineWidth = 1.0;
+        for (let i = 0; i < contours.length; i++) {
+          const conn = contours[i];
+          const startIdx = (conn.start !== undefined) ? conn.start : conn[0];
+          const endIdx = (conn.end !== undefined) ? conn.end : conn[1];
+          const start = lm[startIdx];
+          const end = lm[endIdx];
+          if (start && end) {
+            ctx.moveTo(start.x * width, start.y * height);
+            ctx.lineTo(end.x * width, end.y * height);
+          }
+        }
+        ctx.stroke();
+      } else {
+        // Fallback custom contours paths if FACEMESH_CONTOURS is missing
+        const fallbackPaths = [
+          [70, 63, 105, 66, 107], // Left eyebrow
+          [336, 296, 334, 293, 300], // Right eyebrow
+          [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33], // Left eye
+          [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466, 263], // Right eye
+          [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 409, 270, 269, 267, 0, 37, 39, 40, 185, 61], // Lips
+          [168, 6, 197, 195, 5], // Nose bridge
+          [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10] // Face boundary
+        ];
+        
+        ctx.strokeStyle = 'rgba(0, 229, 255, 0.45)';
+        ctx.lineWidth = 1.0;
+        for (const p of fallbackPaths) {
+          ctx.beginPath();
+          let first = true;
+          for (const idx of p) {
+            const pt = lm[idx];
+            if (!pt) continue;
+            if (first) {
+              ctx.moveTo(pt.x * width, pt.y * height);
+              first = false;
+            } else {
+              ctx.lineTo(pt.x * width, pt.y * height);
+            }
+          }
+          ctx.stroke();
+        }
+      }
+      
+      // C. Major Face Anchor Nodes (glowing centers)
+      const dotIndices = [4, 6, 1, 168, 197, 195, 5, 33, 263, 0, 17, 152];
+      for (const idx of dotIndices) {
+        const pt = lm[idx];
+        if (pt) {
+          const px = pt.x * width;
+          const py = pt.y * height;
+          ctx.beginPath();
+          ctx.arc(px, py, 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(0, 229, 255, 0.35)';
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(px, py, 1.2, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+        }
+      }
+    }
+
+    // 2. Draw Hand skeletons (if available)
+    const drawHand = (handLm, color, outerGlowColor) => {
+      if (!handLm) return;
+      const connections = window.HAND_CONNECTIONS || [
+        [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
+        [0, 5], [5, 6], [6, 7], [7, 8], // Index
+        [5, 9], [9, 10], [10, 11], [11, 12], // Middle
+        [9, 13], [13, 14], [14, 15], [15, 16], // Ring
+        [13, 17], [17, 18], [18, 19], [19, 20], // Pinky
+        [0, 17] // Palm bottom
+      ];
+      
+      ctx.beginPath();
+      for (let i = 0; i < connections.length; i++) {
+        const conn = connections[i];
+        const startIdx = (conn.start !== undefined) ? conn.start : conn[0];
+        const endIdx = (conn.end !== undefined) ? conn.end : conn[1];
+        const start = handLm[startIdx];
+        const end = handLm[endIdx];
+        if (start && end) {
+          ctx.moveTo(start.x * width, start.y * height);
+          ctx.lineTo(end.x * width, end.y * height);
+        }
+      }
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      
+      // Draw joint dots with subtle cyber-pink glow
+      for (let i = 0; i < 21; i++) {
+        const pt = handLm[i];
+        if (pt) {
+          const px = pt.x * width;
+          const py = pt.y * height;
+          ctx.beginPath();
+          ctx.arc(px, py, 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = outerGlowColor;
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(px, py, 1.2, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+        }
+      }
+    };
+    
+    if (opts.leftHandLandmarks) {
+      drawHand(opts.leftHandLandmarks, 'rgba(255, 110, 240, 0.75)', 'rgba(255, 110, 240, 0.35)');
+    }
+    if (opts.rightHandLandmarks) {
+      drawHand(opts.rightHandLandmarks, 'rgba(255, 110, 240, 0.75)', 'rgba(255, 110, 240, 0.35)');
+    }
+
     if (!keypoints || keypoints.length === 0) return;
 
-    // Draw limbs first (behind joints)
+    // 3. Draw Limbs (first, behind joints)
     ctx.lineCap = 'round';
 
     for (const [i, j] of SKELETON_CONNECTIONS) {
+      // If face landmarks are active, hide the sparse pose face connections (0-4)
+      if (opts.faceLandmarks) {
+        const isFaceA = i >= 0 && i <= 4;
+        const isFaceB = j >= 0 && j <= 4;
+        if (isFaceA || isFaceB) continue;
+      }
+
+      // Hide simple finger lines if detailed hand mesh is present
+      const isFingerLink = (i >= 17 && i <= 22) || (j >= 17 && j <= 22);
+      if (isFingerLink) {
+        const isLeftFinger = (i >= 17 && i <= 19) || (j >= 17 && j <= 19);
+        const isRightFinger = (i >= 20 && i <= 22) || (j >= 20 && j <= 22);
+        if (isLeftFinger && opts.leftHandLandmarks) continue;
+        if (isRightFinger && opts.rightHandLandmarks) continue;
+      }
+
       const kpA = keypoints[i];
       const kpB = keypoints[j];
       if (!kpA || !kpB || kpA.confidence < minConf || kpB.confidence < minConf) continue;
@@ -59,12 +222,9 @@ export class CanvasRenderer {
       const ax = kpA.x * width, ay = kpA.y * height;
       const bx = kpB.x * width, by = kpB.y * height;
       const avgConf = (kpA.confidence + kpB.confidence) / 2;
-
-      // Is this a hand/finger connection? (indices 17-22)
-      const isFingerLink = i >= 17 && i <= 22 || j >= 17 && j <= 22;
       const isToeLink = i >= 23 && i <= 24 || j >= 23 && j <= 24;
 
-      // Glow
+      // Glow behind
       ctx.strokeStyle = isFingerLink ? fingerLimb : this.colors.limbGlow;
       ctx.lineWidth = isFingerLink ? 4 : 8;
       ctx.globalAlpha = avgConf * (isFingerLink ? 0.3 : 0.4);
@@ -73,7 +233,7 @@ export class CanvasRenderer {
       ctx.lineTo(bx, by);
       ctx.stroke();
 
-      // Main line
+      // Main sharp connection line
       ctx.strokeStyle = isFingerLink ? fingerColor : isToeLink ? toeColor : limbColor;
       ctx.lineWidth = isFingerLink || isToeLink ? 1.5 : 2.5;
       ctx.globalAlpha = avgConf;
@@ -83,29 +243,83 @@ export class CanvasRenderer {
       ctx.stroke();
     }
 
-    // Draw joints
+    // Kinematic Chin-to-Neck connection when Face Mesh is present
+    if (opts.faceLandmarks && keypoints[25]) {
+      const neckKp = keypoints[25];
+      const chinLm = opts.faceLandmarks[152]; // Chin tip index
+      if (neckKp && chinLm && neckKp.confidence >= minConf) {
+        const nx = neckKp.x * width, ny = neckKp.y * height;
+        const cx = chinLm.x * width, cy = chinLm.y * height;
+        
+        ctx.strokeStyle = this.colors.limbGlow;
+        ctx.lineWidth = 8;
+        ctx.globalAlpha = neckKp.confidence * 0.4;
+        ctx.beginPath();
+        ctx.moveTo(nx, ny);
+        ctx.lineTo(cx, cy);
+        ctx.stroke();
+
+        ctx.strokeStyle = limbColor;
+        ctx.lineWidth = 2.5;
+        ctx.globalAlpha = neckKp.confidence;
+        ctx.beginPath();
+        ctx.moveTo(nx, ny);
+        ctx.lineTo(cx, cy);
+        ctx.stroke();
+      }
+    }
+
+    // 4. Draw Joints
     ctx.globalAlpha = 1;
     for (let idx = 0; idx < keypoints.length; idx++) {
+      // If face landmarks are active, hide the sparse pose face joints (0-4)
+      if (opts.faceLandmarks && idx >= 0 && idx <= 4) continue;
+
+      // Skip simple finger joints if detailed hand mesh is present
+      const isFinger = idx >= 17 && idx <= 22;
+      if (isFinger) {
+        const isLeftFinger = idx >= 17 && idx <= 19;
+        const isRightFinger = idx >= 20 && idx <= 22;
+        if (isLeftFinger && opts.leftHandLandmarks) continue;
+        if (isRightFinger && opts.rightHandLandmarks) continue;
+      }
+
       const kp = keypoints[idx];
       if (!kp || kp.confidence < minConf) continue;
 
       const x = kp.x * width;
       const y = kp.y * height;
-      const isFinger = idx >= 17 && idx <= 22;
       const isToe = idx >= 23 && idx <= 24;
       const isNeck = idx === 25;
       const r = isFinger ? 2 + kp.confidence * 2 : isToe ? 2 : 3 + kp.confidence * 3;
       const jColor = isFinger ? fingerColor : isToe ? toeColor : isNeck ? neckColor : jointColor;
       const gColor = isFinger ? fingerGlow : glowColor;
 
-      // Glow
+      // Glow behind
       ctx.beginPath();
       ctx.arc(x, y, r + (isFinger ? 3 : 4), 0, Math.PI * 2);
       ctx.fillStyle = gColor;
       ctx.globalAlpha = kp.confidence * (isFinger ? 0.5 : 0.6);
       ctx.fill();
 
-      // Joint dot
+      // High-tech holographic target ring styling for body joints
+      if (!isFinger && !isToe) {
+        ctx.strokeStyle = jColor;
+        ctx.globalAlpha = kp.confidence * 0.85;
+        ctx.lineWidth = 1.0;
+        ctx.beginPath();
+        ctx.arc(x, y, r + 4, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = jColor;
+        ctx.globalAlpha = kp.confidence * 0.4;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.arc(x, y, r + 7, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Solid joint dot
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fillStyle = jColor;
@@ -115,9 +329,9 @@ export class CanvasRenderer {
       // White center (body joints only)
       if (!isFinger && !isToe) {
         ctx.beginPath();
-        ctx.arc(x, y, r * 0.4, 0, Math.PI * 2);
+        ctx.arc(x, y, r * 0.45, 0, Math.PI * 2);
         ctx.fillStyle = '#fff';
-        ctx.globalAlpha = kp.confidence * 0.8;
+        ctx.globalAlpha = kp.confidence * 0.95;
         ctx.fill();
       }
     }
