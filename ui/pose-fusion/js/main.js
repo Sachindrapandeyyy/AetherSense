@@ -10,6 +10,9 @@ import { CnnEmbedder } from './cnn-embedder.js?v=13';
 import { FusionEngine } from './fusion-engine.js?v=13';
 import { PoseDecoder, KEYPOINT_NAMES } from './pose-decoder.js?v=13';
 import { CanvasRenderer } from './canvas-renderer.js?v=15';
+import { Skeleton3D } from './skeleton-3d.js?v=15';
+import { ActivityClassifier } from './activity-classifier.js?v=15';
+import { SessionRecorder } from './session-recorder.js?v=15';
 
 // === MediaPipe State ===
 let mpHolistic = null;
@@ -129,6 +132,8 @@ let frameCount = 0;
 let fps = 0;
 let lastFpsTime = 0;
 let confidenceThreshold = 0.3;
+let renderMode = 'kinematic';
+let avatarMode = false;
 
 // Latency tracking
 const latency = { video: 0, csi: 0, fusion: 0, total: 0 };
@@ -141,6 +146,9 @@ const csiCnn = new CnnEmbedder({ inputSize: 56, embeddingDim: 128, seed: 137 });
 const fusionEngine = new FusionEngine(128);
 const poseDecoder = new PoseDecoder(128);
 const renderer = new CanvasRenderer();
+const skeleton3D = new Skeleton3D('skeleton-3d');
+const activityClassifier = new ActivityClassifier();
+const sessionRecorder = new SessionRecorder();
 
 // === Canvas Elements ===
 const skeletonCanvas = document.getElementById('skeleton-canvas');
@@ -162,6 +170,7 @@ const confSlider = document.getElementById('confidence-slider');
 const confValue = document.getElementById('confidence-value');
 const wsUrlInput = document.getElementById('ws-url');
 const connectWsBtn = document.getElementById('connect-ws-btn');
+const csiActivityLabel = document.getElementById('csi-activity-label');
 
 // Fusion bar elements
 const videoBar = document.getElementById('video-bar');
@@ -205,6 +214,14 @@ function init() {
   // Camera start
   startCameraBtn.addEventListener('click', startCamera);
 
+  // Render mode change
+  const renderModeSelect = document.getElementById('render-mode-select');
+  if (renderModeSelect) {
+    renderModeSelect.addEventListener('change', (e) => {
+      renderMode = e.target.value;
+    });
+  }
+
   // Pause
   pauseBtn.addEventListener('click', () => {
     isPaused = !isPaused;
@@ -229,6 +246,112 @@ function init() {
       connectWsBtn.classList.add('active');
     }
   });
+
+  // Avatar mode toggle
+  const avatarModeChk = document.getElementById('avatar-mode-chk');
+  if (avatarModeChk) {
+    avatarModeChk.addEventListener('change', (e) => {
+      avatarMode = e.target.checked;
+    });
+  }
+
+  // Telemetry Recorder controls
+  const recordBtn = document.getElementById('record-btn');
+  const playBtn = document.getElementById('play-btn');
+  const exportBtn = document.getElementById('export-btn');
+  const screenshotBtn = document.getElementById('screenshot-btn');
+
+  if (recordBtn) {
+    recordBtn.addEventListener('click', () => {
+      if (!sessionRecorder.isRecording) {
+        sessionRecorder.startRecording();
+        recordBtn.textContent = '⏹ Stop';
+        recordBtn.classList.add('active');
+        if (playBtn) playBtn.disabled = true;
+        if (exportBtn) exportBtn.disabled = true;
+      } else {
+        sessionRecorder.stopRecording();
+        recordBtn.textContent = '🔴 Record';
+        recordBtn.classList.remove('active');
+        if (playBtn && sessionRecorder.frames.length > 0) playBtn.disabled = false;
+        if (exportBtn && sessionRecorder.frames.length > 0) exportBtn.disabled = false;
+      }
+    });
+  }
+
+  if (playBtn) {
+    playBtn.addEventListener('click', () => {
+      if (!sessionRecorder.isPlaying) {
+        playBtn.textContent = '⏹ Stop';
+        playBtn.classList.add('active');
+        if (recordBtn) recordBtn.disabled = true;
+        if (exportBtn) exportBtn.disabled = true;
+
+        sessionRecorder.startPlayback(
+          (frame) => {
+            renderer.drawSkeleton(skeletonCtx, frame.keypoints, skeletonCanvas.width, skeletonCanvas.height, {
+              minConfidence: confidenceThreshold,
+              color: 'green',
+              label: 'REPLAY',
+              faceLandmarks: frame.faceLandmarks,
+              leftHandLandmarks: frame.leftHandLandmarks,
+              rightHandLandmarks: frame.rightHandLandmarks,
+              renderMode: renderMode
+            });
+            if (skeleton3D) {
+              skeleton3D.update(frame.keypoints, frame.faceLandmarks, confidenceThreshold, avatarMode);
+            }
+          },
+          () => {
+            playBtn.textContent = '▶ Replay';
+            playBtn.classList.remove('active');
+            if (recordBtn) recordBtn.disabled = false;
+            if (exportBtn && sessionRecorder.frames.length > 0) exportBtn.disabled = false;
+          }
+        );
+      } else {
+        sessionRecorder.stopPlayback();
+        playBtn.textContent = '▶ Replay';
+        playBtn.classList.remove('active');
+        if (recordBtn) recordBtn.disabled = false;
+        if (exportBtn && sessionRecorder.frames.length > 0) exportBtn.disabled = false;
+      }
+    });
+  }
+
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      sessionRecorder.exportJson();
+    });
+  }
+
+  if (screenshotBtn) {
+    screenshotBtn.addEventListener('click', () => {
+      // Create a combined canvas to render both video feed and skeleton overlay
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = skeletonCanvas.width;
+      tempCanvas.height = skeletonCanvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+
+      // 1. Draw camera video (corrected for CSS mirror scaling)
+      if (videoCapture.isActive) {
+        tempCtx.save();
+        tempCtx.translate(tempCanvas.width, 0);
+        tempCtx.scale(-1, 1);
+        tempCtx.drawImage(videoCapture.video, 0, 0, tempCanvas.width, tempCanvas.height);
+        tempCtx.restore();
+      } else {
+        tempCtx.fillStyle = '#050810';
+        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+      }
+
+      // 2. Draw 2D canvas skeleton overlay on top
+      tempCtx.drawImage(skeletonCanvas, 0, 0);
+
+      // 3. Trigger screenshot download
+      sessionRecorder.takeScreenshot(tempCanvas);
+    });
+  }
 
   // Try to load RuVector Attention WASM embedders (non-blocking)
   const wasmBase = new URL('../pkg/ruvector-attention', import.meta.url).href;
@@ -304,6 +427,12 @@ function resizeCanvases() {
     const rect = videoPanel.getBoundingClientRect();
     skeletonCanvas.width = rect.width;
     skeletonCanvas.height = rect.height;
+
+    // Resize 3D canvas
+    const canvas3D = document.getElementById('skeleton-3d');
+    if (canvas3D && typeof skeleton3D !== 'undefined' && skeleton3D) {
+      skeleton3D.resize(rect.width, rect.height);
+    }
   }
 
   // CSI canvas (min 200px width)
@@ -322,7 +451,7 @@ function mainLoop(timestamp) {
   if (!isRunning) return;
   requestAnimationFrame(mainLoop);
 
-  if (isPaused) return;
+  if (isPaused || (typeof sessionRecorder !== 'undefined' && sessionRecorder.isPlaying)) return;
 
   try {
   const elapsed = performance.now() / 1000 - startTime;
@@ -378,6 +507,21 @@ function mainLoop(timestamp) {
     // Draw CSI heatmap
     const heatmap = csiSimulator.getHeatmapData();
     renderer.drawCsiHeatmap(csiCtx, heatmap, csiCanvas.width, csiCanvas.height);
+
+    // Classify CSI Activity
+    if (activityClassifier && csiActivityLabel && csiSimulator.amplitudeBuffer.length >= 10) {
+      const actRes = activityClassifier.classify(csiSimulator.amplitudeBuffer);
+      csiActivityLabel.textContent = `${actRes.activity.toUpperCase()} (${Math.round(actRes.confidence * 100)}%)`;
+      if (actRes.activity === 'Walking') {
+        csiActivityLabel.style.color = 'var(--red-alert)';
+      } else if (actRes.activity === 'Gesture/Movement') {
+        csiActivityLabel.style.color = 'var(--amber)';
+      } else if (actRes.activity === 'Standing Still') {
+        csiActivityLabel.style.color = 'var(--green-glow)';
+      } else {
+        csiActivityLabel.style.color = 'var(--text-secondary)';
+      }
+    }
 
     latency.csi = performance.now() - t0;
   }
@@ -456,8 +600,23 @@ function mainLoop(timestamp) {
     label: labelMap[mode],
     faceLandmarks: (mode !== 'csi' && latestMpResults) ? latestMpResults.faceLandmarks : null,
     leftHandLandmarks: (mode !== 'csi' && latestMpResults) ? latestMpResults.leftHandLandmarks : null,
-    rightHandLandmarks: (mode !== 'csi' && latestMpResults) ? latestMpResults.rightHandLandmarks : null
+    rightHandLandmarks: (mode !== 'csi' && latestMpResults) ? latestMpResults.rightHandLandmarks : null,
+    renderMode: renderMode
   });
+
+  // --- Render 3D Skeleton ---
+  if (typeof skeleton3D !== 'undefined' && skeleton3D) {
+    const faceLms = (mode !== 'csi' && latestMpResults) ? latestMpResults.faceLandmarks : null;
+    skeleton3D.update(keypoints, faceLms, confidenceThreshold, avatarMode);
+  }
+
+  // --- Record Telemetry Frame ---
+  if (typeof sessionRecorder !== 'undefined' && sessionRecorder.isRecording) {
+    const faceLms = (mode !== 'csi' && latestMpResults) ? latestMpResults.faceLandmarks : null;
+    const lHand = (mode !== 'csi' && latestMpResults) ? latestMpResults.leftHandLandmarks : null;
+    const rHand = (mode !== 'csi' && latestMpResults) ? latestMpResults.rightHandLandmarks : null;
+    sessionRecorder.recordFrame(keypoints, faceLms, lHand, rHand);
+  }
 
   // --- Render Embedding Space ---
   const embPoints = fusionEngine.getEmbeddingPoints();
