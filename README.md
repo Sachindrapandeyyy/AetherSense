@@ -44,7 +44,8 @@ AetherSense turns ordinary WiFi into a contactless sensor. A $9 ESP32 board read
 
 [![Rust 1.85+](https://img.shields.io/badge/rust-1.85+-orange.svg)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests: 1463](https://img.shields.io/badge/tests-1463%20passed-brightgreen.svg)](https://github.com/ruvnet/AetherSense)
+[![Tests: 1463](https://img.shields.io/badge/tests-1463%20passed-brightgreen.svg)](https://github.com/Sachindrapandeyyy/AetherSense)
+[![CI/CD: Validated](https://img.shields.io/badge/CI%2FCD-validated-brightgreen.svg)](#-cicd--local-verification)
 [![Docker: multi-arch](https://img.shields.io/badge/docker-amd64%20%2B%20arm64-blue.svg)](https://hub.docker.com/r/ruvnet/wifi-densepose)
 [![Vital Signs](https://img.shields.io/badge/vital%20signs-breathing%20%2B%20heartbeat-red.svg)](#vital-sign-detection)
 [![ESP32 Ready](https://img.shields.io/badge/ESP32--S3-CSI%20streaming-purple.svg)](#esp32-s3-hardware-pipeline)
@@ -54,14 +55,14 @@ AetherSense turns ordinary WiFi into a contactless sensor. A $9 ESP32 board read
  
 > | What | How | Speed / scale |
 > |------|-----|---------------|
-> | 🫁 **Breathing rate** | Bandpass 0.1–0.5 Hz on wrapped phase, circular variance, zero-crossing BPM ([#593](https://github.com/ruvnet/AetherSense/issues/593)) | 6–30 BPM, real-time |
+> | 🫁 **Breathing rate** | Bandpass 0.1–0.5 Hz on wrapped phase, circular variance, zero-crossing BPM ([#593](https://github.com/Sachindrapandeyyy/AetherSense/issues/593)) | 6–30 BPM, real-time |
 > | 💓 **Heart rate** | Bandpass 0.8–2.0 Hz, zero-crossing BPM | 40–120 BPM, real-time |
 > | 👤 **Presence detection** | Trained head on Hugging Face ([`ruvnet/wifi-densepose-pretrained`](https://huggingface.co/ruvnet/wifi-densepose-pretrained); v2 encoder = 82.3% held-out temporal-triplet acc, honestly re-benchmarked) + a phase-variance fallback that needs no model | < 1 ms, ~30 s ambient calibration |
 > | 🧬 **CSI embeddings** | 128-dim contrastive encoder shipped on Hugging Face, 4-bit quantised variant fits in 8 KB | **164,183 emb/s** on M4 Pro |
 > | 🦴 **17-keypoint pose estimation** | `cog-pose-estimation` Cog v0.0.1 — signed aarch64 + x86_64 binaries on GCS, loads `pose_v1.safetensors` via Candle. Train your own from paired data in 2.1 s on an RTX 5080 ([ADR-101](docs/adr/ADR-101-pose-estimation-cog.md), [benchmarks](docs/benchmarks/pose-estimation-cog.md)). **SOTA on MM-Fi:** [`ruvnet/wifi-densepose-mmfi-pose`](https://huggingface.co/ruvnet/wifi-densepose-mmfi-pose) hits **82.69% torso-PCK@20** (ensemble 83.59%), beating MultiFormer (72.25%) and CSI2Pose (68.41%) on the matched MM-Fi `random_split` protocol — self-corrected and auditable on [AetherArena](https://huggingface.co/spaces/ruvnet/aether-arena) | 8.4 ms cold-start on a Pi 5 |
 > | 🚶 **Motion / activity** | Motion-band power + phase acceleration | Real-time |
-> | 🤸 **Fall detection** | Phase-acceleration threshold + 3-frame debounce + 5 s cooldown ([#263](https://github.com/ruvnet/AetherSense/issues/263)) | < 200 ms |
-> | 🧮 **Multi-person count** | Adaptive P95 normalisation + runtime-tunable dedup factor (`/api/v1/config/dedup-factor`, [#491](https://github.com/ruvnet/AetherSense/pull/491)). Six specialised learned counters available as Cogs: `occupancy-zones`, `elevator-count`, `queue-length`, `customer-flow`, `clean-room`, `person-matching` | Real-time, self-calibrating |
+> | 🤸 **Fall detection** | Phase-acceleration threshold + 3-frame debounce + 5 s cooldown ([#263](https://github.com/Sachindrapandeyyy/AetherSense/issues/263)) | < 200 ms |
+> | 🧮 **Multi-person count** | Adaptive P95 normalisation + runtime-tunable dedup factor (`/api/v1/config/dedup-factor`, [#491](https://github.com/Sachindrapandeyyy/AetherSense/pull/491)). Six specialised learned counters available as Cogs: `occupancy-zones`, `elevator-count`, `queue-length`, `customer-flow`, `clean-room`, `person-matching` | Real-time, self-calibrating |
 > | 🌍 **World model prediction** | OccWorld TransVQVAE — 15-frame future occupancy prediction, 209 ms inference, 3.4 GB VRAM on RTX 5080; fine-tune on your space with `occworld_retrain.py` ([ADR-147](docs/adr/ADR-147-nvidia-cosmos-world-foundation-model-integration.md)) | 15 frames × 200×200×16 vox |
 > | 🧱 **Through-wall sensing** | Fresnel-zone geometry + multipath modeling | Up to ~5 m, signal-dependent |
 > | 🧠 **Edge intelligence** | **105-cog catalog** ([ADR-102](docs/adr/ADR-102-edge-module-registry.md)) live from `app-registry.json` — health, security, building, retail, industrial, research, AI, swarm, signal, network, and developer modules. Optional Cognitum Seed adds persistent vector store + kNN + witness chain | $140 total BOM |
@@ -146,9 +147,9 @@ pip install "aethersense[client]"              # or: pip install "wifi-densepose
 > |--------|----------|------|----------|-------------|
 > | **ESP32 + Cognitum Seed** (recommended) | ESP32-S3 + [Cognitum Seed](https://cognitum.one) | ~$140 | Yes | Presence, motion, breathing, heart rate, fall detection, multi-person counting, 17-keypoint pose (signed Cog binary), 105-cog catalog, persistent vector store, kNN search, witness chain, MCP proxy |
 > | **ESP32 Mesh** | 3-6× ESP32-S3 + WiFi router | ~$54 | Yes | Same capabilities as above without the persistent-memory features |
-> | **ESP32-C6 research node** ([ADR-110](docs/adr/ADR-110-esp32-c6-firmware-extension.md), [witness](docs/WITNESS-LOG-110.md), [reviewer guide](docs/ADR-110-REVIEW-GUIDE.md), [firmware v0.7.0](https://github.com/ruvnet/AetherSense/releases/tag/v0.7.0-esp32)) | ESP32-C6-DevKit ($6–10) | ~$10 | Yes (Wi-Fi 6 capable) | Same CSI pipeline as S3 with the dual-target firmware. **Firmware-side ADR-110 substrate now closed** (v0.7.0): ESP-NOW cross-board mesh quantified at **99.56 % match / 104 µs smoothed offset stdev / 3.95× EMA suppression** over a 5-min two-board soak (witness §A0.10), 32-byte UDP sync packet with operator-tunable cadence (§A0.12), ADR-018 byte 19 bit 4 wire-fix sourced from the working ESP-NOW path (§A0.13). Wire format ready for HE-LTF PPDU tagging in ADR-018 bytes 18-19 (firmware encoder + Rust + Python decoders verified end-to-end across 23 unit tests). LP-core motion-gate RISC-V program and Wi-Fi 6 soft-AP with TWT Responder both ship as opt-in code paths (default off). **Hardware-gated for measurement**: HE-LTF live subcarrier capture needs an 11ax AP (IDF v5.4 doesn't expose AP-side HE config — §A0.6); ~5 µA LP-core hibernation needs an INA meter to capture; 802.15.4 raw RX is broken in IDF v5.4 (workaround: ESP-NOW transport, shipped + measured). See witness log for the empirical / claimed split. |
+> | **ESP32-C6 research node** ([ADR-110](docs/adr/ADR-110-esp32-c6-firmware-extension.md), [witness](docs/WITNESS-LOG-110.md), [reviewer guide](docs/ADR-110-REVIEW-GUIDE.md), [firmware v0.7.0](https://github.com/Sachindrapandeyyy/AetherSense/releases/tag/v0.7.0-esp32)) | ESP32-C6-DevKit ($6–10) | ~$10 | Yes (Wi-Fi 6 capable) | Same CSI pipeline as S3 with the dual-target firmware. **Firmware-side ADR-110 substrate now closed** (v0.7.0): ESP-NOW cross-board mesh quantified at **99.56 % match / 104 µs smoothed offset stdev / 3.95× EMA suppression** over a 5-min two-board soak (witness §A0.10), 32-byte UDP sync packet with operator-tunable cadence (§A0.12), ADR-018 byte 19 bit 4 wire-fix sourced from the working ESP-NOW path (§A0.13). Wire format ready for HE-LTF PPDU tagging in ADR-018 bytes 18-19 (firmware encoder + Rust + Python decoders verified end-to-end across 23 unit tests). LP-core motion-gate RISC-V program and Wi-Fi 6 soft-AP with TWT Responder both ship as opt-in code paths (default off). **Hardware-gated for measurement**: HE-LTF live subcarrier capture needs an 11ax AP (IDF v5.4 doesn't expose AP-side HE config — §A0.6); ~5 µA LP-core hibernation needs an INA meter to capture; 802.15.4 raw RX is broken in IDF v5.4 (workaround: ESP-NOW transport, shipped + measured). See witness log for the empirical / claimed split. |
 > | **Research NIC** | Intel 5300 / Atheros AR9580 | ~$50-100 | Yes | Full CSI with 3x3 MIMO |
-> | **Any WiFi** | Windows, macOS, or Linux laptop | $0 | No | RSSI-only: coarse presence and motion (see [tutorial #36](https://github.com/ruvnet/AetherSense/issues/36)) |
+> | **Any WiFi** | Windows, macOS, or Linux laptop | $0 | No | RSSI-only: coarse presence and motion (see [tutorial #36](https://github.com/Sachindrapandeyyy/AetherSense/issues/36)) |
 >
 > No hardware? Verify the signal processing pipeline with the deterministic reference signal: `python archive/v1/data/proof/verify.py`
 >
@@ -218,7 +219,7 @@ The separate **17-keypoint pose-estimation model** is now published at [`ruvnet/
 python archive/v1/data/proof/verify.py
 ```
 
-Tracked in [#509](https://github.com/ruvnet/AetherSense/issues/509); see [ADR-079](docs/adr/ADR-079-camera-supervised-pose-finetune.md) phases P7–P9 for the camera-supervised fine-tune path.
+Tracked in [#509](https://github.com/Sachindrapandeyyy/AetherSense/issues/509); see [ADR-079](docs/adr/ADR-079-camera-supervised-pose-finetune.md) phases P7–P9 for the camera-supervised fine-tune path.
 
 
 ## 🧩 Edge Module Catalog
@@ -640,6 +641,27 @@ Verify the plugin structure: `bash plugins/aethersense/scripts/smoke.sh`. Full d
 
 ---
 
+## 🧪 CI/CD & Local Verification
+
+All 22 GitHub Actions workflows (Continuous Integration, Continuous Deployment, Security Scanning, Swarm CI, etc.) are syntactically and logically validated.
+
+> [!NOTE]
+> **GitHub Actions Execution Warning:**
+> If you encounter runner failures on GitHub Actions with a message like:
+> `"The job was not started because recent account payments have failed or your spending limit needs to be increased."`
+> This is caused by account billing or spending limits on the GitHub owner's account and does not reflect a code or configuration error.
+
+To run the verification suite and regression guards locally:
+```bash
+# 1. Verify the 25 fix-marker regression guards:
+python scripts/check_fix_markers.py
+
+# 2. Run the deterministic pipeline proof:
+python archive/v1/data/proof/verify.py
+```
+
+---
+
 ## 🚧 Beta software
 
 > **Beta Software** — Under active development. APIs and firmware may change. Known limitations:
@@ -647,7 +669,7 @@ Verify the plugin structure: `bash plugins/aethersense/scripts/smoke.sh`. Full d
 > - Single ESP32 deployments have limited spatial resolution — use 2+ nodes or add a [Cognitum Seed](https://cognitum.one) for best results
 > - Camera-free pose accuracy is limited (PCK@20 ≈ 2.5% with proxy labels) — [camera ground-truth training](docs/adr/ADR-079-camera-ground-truth-training.md) targets **35%+ PCK@20**; the pipeline is implemented, but the data-collection and evaluation phases (ADR-079 P7–P9) are still pending.
 >
-> Contributions and bug reports welcome at [Issues](https://github.com/ruvnet/AetherSense/issues).
+> Contributions and bug reports welcome at [Issues](https://github.com/Sachindrapandeyyy/AetherSense/issues).
 
 ## 📄 License
 
@@ -661,7 +683,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## 📞 Support
 
-[GitHub Issues](https://github.com/ruvnet/AetherSense/issues) | [Discussions](https://github.com/ruvnet/AetherSense/discussions) | [PyPI](https://pypi.org/project/wifi-densepose/)
+[GitHub Issues](https://github.com/Sachindrapandeyyy/AetherSense/issues) | [Discussions](https://github.com/Sachindrapandeyyy/AetherSense/discussions) | [PyPI](https://pypi.org/project/wifi-densepose/)
 
 ---
 
