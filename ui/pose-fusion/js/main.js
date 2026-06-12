@@ -8,8 +8,117 @@ import { VideoCapture } from './video-capture.js?v=13';
 import { CsiSimulator } from './csi-simulator.js?v=13';
 import { CnnEmbedder } from './cnn-embedder.js?v=13';
 import { FusionEngine } from './fusion-engine.js?v=13';
-import { PoseDecoder } from './pose-decoder.js?v=13';
+import { PoseDecoder, KEYPOINT_NAMES } from './pose-decoder.js?v=13';
 import { CanvasRenderer } from './canvas-renderer.js?v=13';
+
+// === MediaPipe State ===
+let mpPose = null;
+let latestMpResults = null;
+let isMpProcessing = false;
+
+function initMediaPipe() {
+  if (typeof Pose === 'undefined') {
+    console.warn('[PoseFusion] MediaPipe Pose library not loaded yet, retrying in 500ms...');
+    setTimeout(initMediaPipe, 500);
+    return;
+  }
+  
+  try {
+    mpPose = new Pose({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+    });
+    
+    mpPose.setOptions({
+      modelComplexity: 1,
+      smoothLandmarks: true,
+      enableSegmentation: false,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+    
+    mpPose.onResults((results) => {
+      latestMpResults = results;
+    });
+    
+    console.log('[PoseFusion] MediaPipe Pose initialized successfully');
+  } catch (err) {
+    console.error('[PoseFusion] Failed to initialize MediaPipe Pose:', err);
+  }
+}
+
+async function processMediaPipe() {
+  if (!mpPose || isMpProcessing || !videoCapture.isActive || isPaused) return;
+  isMpProcessing = true;
+  try {
+    await mpPose.send({ image: videoCapture.video });
+  } catch (err) {
+    console.error('[MediaPipe] Error processing frame:', err);
+  } finally {
+    isMpProcessing = false;
+  }
+}
+
+function mapMediaPipeToAetherSense(landmarks) {
+  if (!landmarks) return null;
+  
+  const getKp = (idx, confidence = 0.9) => {
+    const lm = landmarks[idx];
+    if (!lm) return { x: 0.5, y: 0.5, confidence: 0 };
+    return {
+      x: lm.x,
+      y: lm.y,
+      confidence: lm.visibility || confidence
+    };
+  };
+
+  const lSh = landmarks[11];
+  const rSh = landmarks[12];
+  const neck = (lSh && rSh) 
+    ? { x: (lSh.x + rSh.x) / 2, y: (lSh.y + rSh.y) / 2 - 0.03, confidence: Math.min(lSh.visibility || 0.9, rSh.visibility || 0.9) }
+    : { x: 0.5, y: 0.5, confidence: 0 };
+
+  const keypoints = [
+    getKp(0),  // nose
+    getKp(2),  // left_eye
+    getKp(5),  // right_eye
+    getKp(7),  // left_ear
+    getKp(8),  // right_ear
+    getKp(11), // left_shoulder
+    getKp(12), // right_shoulder
+    getKp(13), // left_elbow
+    getKp(14), // right_elbow
+    getKp(15), // left_wrist
+    getKp(16), // right_wrist
+    getKp(23), // left_hip
+    getKp(24), // right_hip
+    getKp(25), // left_knee
+    getKp(26), // right_knee
+    getKp(27), // left_ankle
+    getKp(28), // right_ankle
+    
+    // Hand keypoints
+    getKp(21), // left_thumb
+    getKp(19), // left_index
+    getKp(17), // left_pinky
+    getKp(22), // right_thumb
+    getKp(20), // right_index
+    getKp(18), // right_pinky
+    
+    // Foot keypoints
+    getKp(31), // left_foot_index (toe tip)
+    getKp(32), // right_foot_index (toe tip)
+    
+    // Neck
+    neck
+  ];
+
+  // Assign names
+  for (let i = 0; i < keypoints.length; i++) {
+    keypoints[i].name = KEYPOINT_NAMES[i];
+  }
+
+  return keypoints;
+}
 
 // === State ===
 let mode = 'dual';  // 'dual' | 'video' | 'csi'
@@ -148,6 +257,9 @@ function init() {
     }
   });
 
+  // Initialize MediaPipe Pose
+  initMediaPipe();
+
   // Auto-start camera for video/dual modes
   updateModeUI();
   startTime = performance.now() / 1000;
@@ -220,6 +332,9 @@ function mainLoop(timestamp) {
   let videoEmb = null;
   let motionRegion = null;
   if (mode !== 'csi' && videoCapture.isActive) {
+    // Start MediaPipe Pose processing in background (non-blocking)
+    processMediaPipe();
+
     const t0 = performance.now();
     const frame = videoCapture.captureFrame(56, 56);
     if (frame) {
@@ -240,7 +355,9 @@ function mainLoop(timestamp) {
         0, csiSimulator.isLive || mode === 'dual'
       );
     }
-    latency.video = performance.now() - t0;
+    if (!isMpProcessing) {
+      latency.video = performance.now() - t0;
+    }
   }
 
   // --- CSI Pipeline ---
@@ -292,7 +409,44 @@ function mainLoop(timestamp) {
     isLive: csiSimulator.isLive
   };
 
-  const keypoints = poseDecoder.decode(fusedEmb, motionRegion, elapsed, csiState);
+  // Decode CSI keypoints
+  const csiKeypoints = poseDecoder.decode(fusedEmb, motionRegion, elapsed, csiState);
+
+  // Extract MediaPipe webcam landmarks if active
+  let videoKeypoints = null;
+  if (mode !== 'csi' && latestMpResults && latestMpResults.poseLandmarks) {
+    videoKeypoints = mapMediaPipeToAetherSense(latestMpResults.poseLandmarks);
+  }
+
+  // Dual-modal pose keypoints fusion
+  let keypoints = [];
+  if (mode === 'video') {
+    keypoints = videoKeypoints || csiKeypoints;
+  } else if (mode === 'dual' && videoKeypoints) {
+    const fusedKeypoints = [];
+    const alpha = fusionEngine.videoConfidence / (fusionEngine.videoConfidence + fusionEngine.csiConfidence || 1.0);
+    
+    for (let i = 0; i < 26; i++) {
+      const vk = videoKeypoints[i];
+      const ck = csiKeypoints[i];
+      if (vk && ck) {
+        fusedKeypoints.push({
+          x: alpha * vk.x + (1 - alpha) * ck.x,
+          y: alpha * vk.y + (1 - alpha) * ck.y,
+          confidence: alpha * vk.confidence + (1 - alpha) * ck.confidence,
+          name: vk.name
+        });
+      } else if (vk) {
+        fusedKeypoints.push(vk);
+      } else if (ck) {
+        fusedKeypoints.push(ck);
+      }
+    }
+    keypoints = fusedKeypoints;
+  } else {
+    // Fallback to CSI only when no video landmarks are detected
+    keypoints = csiKeypoints;
+  }
 
   // --- Render Skeleton ---
   const labelMap = { dual: 'DUAL FUSION', video: 'VIDEO ONLY', csi: 'CSI ONLY' };
