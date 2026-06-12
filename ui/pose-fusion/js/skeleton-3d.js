@@ -1,7 +1,7 @@
 /**
  * Skeleton3D — WebGL 3D Skeleton visualizer using Three.js
  */
-import { AvatarRenderer } from './avatar-renderer.js?v=15';
+import { AvatarRenderer } from './avatar-renderer.js?v=16';
 
 export class Skeleton3D {
   constructor(canvasId) {
@@ -36,20 +36,20 @@ export class Skeleton3D {
       console.warn('[Skeleton3D] THREE.OrbitControls not loaded, interaction disabled');
     }
 
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0x0a1424, 2.0);
+    // Lights (gold/warm orange ambient and directional lights)
+    const ambientLight = new THREE.AmbientLight(0x181008, 2.0);
     this.scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0x00d878, 2.0);
+    const dirLight = new THREE.DirectionalLight(0xffb300, 2.0);
     dirLight.position.set(5, 10, 7);
     this.scene.add(dirLight);
 
-    const dirLight2 = new THREE.DirectionalLight(0x00e5ff, 1.2);
+    const dirLight2 = new THREE.DirectionalLight(0xff7043, 1.2);
     dirLight2.position.set(-5, 5, -5);
     this.scene.add(dirLight2);
 
-    // Grid Floor
-    const gridHelper = new THREE.GridHelper(20, 24, 0x00d878, 0x081628);
+    // Grid Floor (styled to match premium gold/yellow theme)
+    const gridHelper = new THREE.GridHelper(20, 24, 0xffca28, 0x1c120c);
     gridHelper.position.y = -2.0;
     this.scene.add(gridHelper);
 
@@ -60,18 +60,18 @@ export class Skeleton3D {
     this.faceGroup = new THREE.Group();
     this.scene.add(this.faceGroup);
 
-    // Geometries & Materials
+    // Geometries & Materials (gold joint spheres and limbs)
     this.jointGeom = new THREE.SphereGeometry(0.12, 16, 16);
     this.jointMaterial = new THREE.MeshStandardMaterial({
-      color: 0x00d878,
+      color: 0xffca28,
       roughness: 0.1,
       metalness: 0.8,
-      emissive: 0x00d878,
+      emissive: 0xffca28,
       emissiveIntensity: 0.15
     });
 
     this.limbMaterial = new THREE.MeshStandardMaterial({
-      color: 0x00e5ff,
+      color: 0xffb300,
       roughness: 0.4,
       metalness: 0.5,
       transparent: true,
@@ -163,11 +163,11 @@ export class Skeleton3D {
       const mesh = new THREE.Mesh(this.jointGeom, this.jointMaterial.clone());
       mesh.position.copy(pt);
 
-      // Color-code joints matching 2D kinematic gradients
-      if (idx <= 4) mesh.material.color.setHex(0xff6040); // Head (warm red)
-      else if (idx <= 10) mesh.material.color.setHex(0xffaa00); // Arms (orange-yellow)
-      else if (idx <= 16) mesh.material.color.setHex(0x44cc66); // Legs (green)
-      else mesh.material.color.setHex(0x00d878);
+      // Color-code joints matching 2D kinematic gradients (themed around gold/orange/red)
+      if (idx <= 4) mesh.material.color.setHex(0xff5252); // Head (red-orange)
+      else if (idx <= 10) mesh.material.color.setHex(0xffa726); // Arms (orange)
+      else if (idx <= 16) mesh.material.color.setHex(0xffd54f); // Legs (warm gold)
+      else mesh.material.color.setHex(0xffb300); // Hand/feet (deep gold)
 
       this.skeletonGroup.add(mesh);
     });
@@ -232,11 +232,11 @@ export class Skeleton3D {
       vertices[i * 3 + 1] = y + offset.y;
       vertices[i * 3 + 2] = z + offset.z;
 
-      // Color based on relative depth
+      // Color based on relative depth (gold/yellow near, orange/red far)
       const pct = Math.max(0, Math.min(1, (pt.z + 0.05) / 0.1));
-      colors[i * 3] = 0.0;
-      colors[i * 3 + 1] = 1.0 - pct * 0.7; // bright green to deep green-blue
-      colors[i * 3 + 2] = 1.0 - pct * 0.3; // cyan
+      colors[i * 3] = 1.0;
+      colors[i * 3 + 1] = 0.85 - pct * 0.45;
+      colors[i * 3 + 2] = 0.3 - pct * 0.3;
     }
 
     const geom = new THREE.BufferGeometry();

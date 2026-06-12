@@ -5,26 +5,26 @@ export class AvatarRenderer {
   constructor() {
     this.group = new THREE.Group();
 
-    // Humanoid materials
+    // Humanoid materials (gold themed wireframes and emissive orange joints)
     this.bodyMaterial = new THREE.MeshStandardMaterial({
-      color: 0x00d878,
+      color: 0xffca28, // gold
       wireframe: true,
       transparent: true,
       opacity: 0.65
     });
 
     this.headMaterial = new THREE.MeshStandardMaterial({
-      color: 0x00e5ff,
+      color: 0xffb300, // deep gold
       wireframe: true,
       transparent: true,
       opacity: 0.75
     });
 
     this.jointMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffb020,
+      color: 0xff7043, // warm coral orange for joints
       roughness: 0.2,
       metalness: 0.8,
-      emissive: 0xffb020,
+      emissive: 0xff7043,
       emissiveIntensity: 0.1
     });
   }

@@ -9,8 +9,8 @@ import { CsiSimulator } from './csi-simulator.js?v=13';
 import { CnnEmbedder } from './cnn-embedder.js?v=13';
 import { FusionEngine } from './fusion-engine.js?v=13';
 import { PoseDecoder, KEYPOINT_NAMES } from './pose-decoder.js?v=13';
-import { CanvasRenderer } from './canvas-renderer.js?v=15';
-import { Skeleton3D } from './skeleton-3d.js?v=15';
+import { CanvasRenderer } from './canvas-renderer.js?v=16';
+import { Skeleton3D } from './skeleton-3d.js?v=16';
 import { ActivityClassifier } from './activity-classifier.js?v=15';
 import { SessionRecorder } from './session-recorder.js?v=15';
 

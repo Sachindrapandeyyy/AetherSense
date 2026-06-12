@@ -211,8 +211,8 @@ export class CanvasRenderer {
     const binCount = 8;
     const tessBins = Array.from({ length: binCount }, () => []);
 
-    // ── B. Group FACEMESH_TESSELATION by Z depth ──────
-    const tess = window.FACEMESH_TESSELATION;
+    // ── B. Group FACEMESH_TESSELLATION by Z depth ──────
+    const tess = window.FACEMESH_TESSELLATION || window.FACEMESH_TESSELATION;
     if (tess && getSize(tess) > 100) {
       for (const c of tess) {
         const si = (c.start !== undefined) ? c.start : c[0];
@@ -226,15 +226,15 @@ export class CanvasRenderer {
         }
       }
 
-      // Draw each bin in a single path
+      // Draw each bin in a single path (gold-orange depth colors)
       for (let b = 0; b < binCount; b++) {
         const edges = tessBins[b];
         if (edges.length === 0) continue;
         const pct = b / (binCount - 1 || 1);
-        const g = Math.floor(229 - pct * (229 - 51));
-        const bl = Math.floor(255 - pct * (255 - 102));
-        ctx.strokeStyle = `rgba(0, ${g}, ${bl}, 0.35)`;
-        ctx.lineWidth = 0.5;
+        const g = Math.floor(215 - pct * (215 - 120));
+        const bl = Math.floor(80 - pct * 80);
+        ctx.strokeStyle = `rgba(255, ${g}, ${bl}, 0.38)`;
+        ctx.lineWidth = 0.55;
         ctx.beginPath();
         for (const [p1, p2] of edges) {
           ctx.moveTo(p1.x * w, p1.y * h);
@@ -243,7 +243,7 @@ export class CanvasRenderer {
         ctx.stroke();
       }
     } else {
-      // Fallback: nearest-neighbor dense mesh
+      // Fallback: nearest-neighbor dense mesh (gold/yellow)
       this._drawFallbackMesh(ctx, lm, w, h);
     }
 
@@ -267,9 +267,9 @@ export class CanvasRenderer {
         const edges = contourBins[b];
         if (edges.length === 0) continue;
         const pct = b / (binCount - 1 || 1);
-        const g = Math.floor(229 - pct * (229 - 51));
-        const bl = Math.floor(255 - pct * (255 - 102));
-        ctx.strokeStyle = `rgba(0, ${g}, ${bl}, 0.65)`;
+        const g = Math.floor(215 - pct * (215 - 120));
+        const bl = Math.floor(80 - pct * 80);
+        ctx.strokeStyle = `rgba(255, ${g}, ${bl}, 0.70)`;
         ctx.lineWidth = 1.0;
         ctx.beginPath();
         for (const [p1, p2] of edges) {
@@ -279,8 +279,8 @@ export class CanvasRenderer {
         ctx.stroke();
       }
     } else {
-      // Fallback contour paths
-      ctx.strokeStyle = 'rgba(0, 229, 255, 0.65)';
+      // Fallback contour paths (gold/yellow)
+      ctx.strokeStyle = 'rgba(255, 213, 79, 0.65)';
       ctx.lineWidth = 1.0;
       for (const path of FACE_CONTOUR_PATHS) {
         ctx.beginPath();
@@ -295,9 +295,9 @@ export class CanvasRenderer {
       }
     }
 
-    // ── D. Iris rings ────────────────────────────────
+    // ── D. Iris rings (gold) ────────────────────────────────
     if (n > 476) {
-      ctx.strokeStyle = 'rgba(0, 229, 255, 0.7)';
+      ctx.strokeStyle = 'rgba(255, 193, 7, 0.85)';
       ctx.lineWidth = 1.2;
       for (const iris of [[468,469,470,471,468],[473,474,475,476,473]]) {
         ctx.beginPath();
@@ -312,23 +312,23 @@ export class CanvasRenderer {
       }
     }
 
-    // ── E. ALL face landmark dots (colored by depth) ──
+    // ── E. ALL face landmark dots (colored by depth, gold-orange) ──
     for (let i = 0; i < n; i++) {
       if (!lm[i]) continue;
       const z = lm[i].z || 0;
       let pct = (z - minZ) / (maxZ - minZ || 1);
       pct = Math.max(0, Math.min(1, pct));
-      const g = Math.floor(229 - pct * (229 - 51));
-      const bl = Math.floor(255 - pct * (255 - 102));
-      ctx.fillStyle = `rgba(0, ${g}, ${bl}, 0.65)`;
+      const g = Math.floor(215 - pct * (215 - 120));
+      const bl = Math.floor(80 - pct * 80);
+      ctx.fillStyle = `rgba(255, ${g}, ${bl}, 0.65)`;
       ctx.beginPath();
       ctx.arc(lm[i].x * w, lm[i].y * h, 1.0, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // ── F. Key anchor dots (larger, brighter) ───────
+    // ── F. Key anchor dots (larger, bright gold) ───────
     const anchors = [4,6,1,168,197,195,5,33,263,0,17,152,10,338];
-    ctx.fillStyle = '#00e5ff';
+    ctx.fillStyle = '#ffd54f';
     for (const idx of anchors) {
       if (idx < n && lm[idx]) {
         ctx.beginPath();
@@ -489,8 +489,8 @@ export class CanvasRenderer {
     }
 
     if (this._cachedFaceMeshEdges && this._cachedFaceMeshEdges.length > 0) {
-      ctx.strokeStyle = 'rgba(0, 229, 255, 0.35)';
-      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = 'rgba(255, 213, 79, 0.38)';
+      ctx.lineWidth = 0.55;
       ctx.beginPath();
       for (const [si, ei] of this._cachedFaceMeshEdges) {
         if (si < n && ei < n && lm[si] && lm[ei]) {
@@ -517,7 +517,7 @@ export class CanvasRenderer {
       maxY = Math.max(maxY, landmarks[i].y);
     }
     const faceSize = Math.max(maxX - minX, maxY - minY) || 0.3;
-    const threshold = faceSize * 0.038;
+    const threshold = faceSize * 0.045; // Increased threshold for more robust fallback mesh connection
     const threshSq = threshold * threshold;
 
     const edges = [];
@@ -545,8 +545,8 @@ export class CanvasRenderer {
     // Use window.HAND_CONNECTIONS if available, otherwise hardcoded
     const connections = window.HAND_CONNECTIONS || HAND_BONES;
 
-    // ── Bone lines ──
-    ctx.strokeStyle = 'rgba(255, 110, 240, 0.7)';
+    // ── Bone lines (gold/yellow) ──
+    ctx.strokeStyle = 'rgba(255, 213, 79, 0.75)';
     ctx.lineWidth = 1.8;
     ctx.lineCap = 'round';
     ctx.beginPath();
@@ -574,8 +574,8 @@ export class CanvasRenderer {
       const tipIndex = fingerTips.indexOf(i);
       const isTip = tipIndex !== -1;
 
-      // Glow color: pink by default, green/red for tip status
-      let glowColor = 'rgba(255, 110, 240, 0.25)';
+      // Glow color: gold/orange by default, green/red for tip status
+      let glowColor = 'rgba(255, 193, 7, 0.28)';
       let centerColor = '#ffffff';
 
       if (isTip) {
@@ -732,6 +732,23 @@ export class CanvasRenderer {
       ctx.lineWidth = 1;
       ctx.globalAlpha = kp.confidence * 0.6;
       ctx.stroke();
+
+      // High-tech holographic target ring styling for body joints
+      if (!isFinger && !isToe) {
+        ctx.strokeStyle = jColor;
+        ctx.globalAlpha = kp.confidence * 0.85;
+        ctx.lineWidth = 1.0;
+        ctx.beginPath();
+        ctx.arc(x, y, r + 4, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = jColor;
+        ctx.globalAlpha = kp.confidence * 0.4;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.arc(x, y, r + 7, 0, Math.PI * 2);
+        ctx.stroke();
+      }
 
       // White center highlight
       if (!isFinger && !isToe) {
@@ -1138,8 +1155,8 @@ export class CanvasRenderer {
     // 1. Torso Block
     if (checkConf(5, 6, 11, 12)) {
       const pLSh = keypoints[5], pRSh = keypoints[6], pLHp = keypoints[11], pRHp = keypoints[12];
-      ctx.fillStyle = isCSI ? 'rgba(255, 176, 32, 0.3)' : 'rgba(0, 216, 120, 0.35)';
-      ctx.strokeStyle = isCSI ? 'rgba(255, 176, 32, 0.6)' : 'rgba(0, 216, 120, 0.6)';
+      ctx.fillStyle = isCSI ? 'rgba(255, 176, 32, 0.3)' : 'rgba(255, 213, 79, 0.35)';
+      ctx.strokeStyle = isCSI ? 'rgba(255, 176, 32, 0.6)' : 'rgba(255, 213, 79, 0.6)';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(pLSh.x * w, pLSh.y * h);
@@ -1174,10 +1191,10 @@ export class CanvasRenderer {
       ctx.stroke();
     };
 
-    const leftFill = isCSI ? 'rgba(255, 176, 32, 0.25)' : 'rgba(0, 229, 255, 0.3)';
-    const leftStroke = isCSI ? 'rgba(255, 176, 32, 0.5)' : 'rgba(0, 229, 255, 0.5)';
-    const rightFill = isCSI ? 'rgba(255, 176, 32, 0.25)' : 'rgba(255, 110, 240, 0.3)';
-    const rightStroke = isCSI ? 'rgba(255, 176, 32, 0.5)' : 'rgba(255, 110, 240, 0.5)';
+    const leftFill = isCSI ? 'rgba(255, 176, 32, 0.25)' : 'rgba(255, 213, 79, 0.3)';
+    const leftStroke = isCSI ? 'rgba(255, 176, 32, 0.5)' : 'rgba(255, 213, 79, 0.6)';
+    const rightFill = isCSI ? 'rgba(255, 176, 32, 0.25)' : 'rgba(255, 152, 0, 0.25)';
+    const rightStroke = isCSI ? 'rgba(255, 176, 32, 0.5)' : 'rgba(255, 152, 0, 0.55)';
 
     // Arms
     if (checkConf(5, 7)) drawPlanarSegment(keypoints[5], keypoints[7], 14, leftFill, leftStroke);
@@ -1196,7 +1213,7 @@ export class CanvasRenderer {
   _drawVolumetricBody(ctx, keypoints, w, h, minConf, hasFaceMesh, isCSI) {
     const checkConf = (...indices) => indices.every(idx => keypoints[idx] && keypoints[idx].confidence >= minConf);
 
-    const baseColor = isCSI ? '255, 176, 32' : '0, 229, 255';
+    const baseColor = isCSI ? '255, 176, 32' : '255, 193, 7';
 
     const drawVolumetricSegment = (p1, p2, widthPx) => {
       const ax = p1.x * w, ay = p1.y * h;
