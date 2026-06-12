@@ -98,6 +98,12 @@ python archive/v1/data/proof/verify.py
 
 # Python — test suite
 cd archive/v1 && python -m pytest tests/ -x -q
+
+# Running backend & UI locally:
+# 1. Start Python sensing server (runs on port 8765, falls back to Windows RSSI / simulation):
+cd archive && python -m v1.src.sensing.ws_server
+# 2. Serve static UI server (runs on port 3000, connects to backend automatically):
+cd ui && python -m http.server 3000
 ```
 
 ### ESP32 Firmware Build (Windows — Python subprocess required)

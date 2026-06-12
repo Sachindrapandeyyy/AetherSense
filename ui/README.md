@@ -1,6 +1,6 @@
-# WiFi DensePose UI
+# AetherSense UI
 
-A modular, modern web interface for the WiFi DensePose human tracking system. Provides real-time monitoring, WiFi sensing visualization, and pose estimation from CSI (Channel State Information).
+A modular, modern web interface for the AetherSense human tracking system. Provides real-time monitoring, WiFi sensing visualization, and pose estimation from CSI (Channel State Information).
 
 ## Architecture
 
@@ -136,12 +136,13 @@ cargo build -p wifi-densepose-sensing-server --no-default-features
 ```
 Open http://localhost:3000/ui/index.html
 
-### With Python HTTP server (legacy)
+### With local Python WebSocket backend & UI server
 ```bash
-# Start FastAPI backend on port 8000
-wifi-densepose start
+# Start the Python WebSocket sensing server (runs on port 8765)
+cd archive/
+python -m v1.src.sensing.ws_server
 
-# Serve the UI on port 3000
+# In a separate terminal, serve the UI on port 3000
 cd ui/
 python -m http.server 3000
 ```

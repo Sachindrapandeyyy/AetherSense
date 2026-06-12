@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://cognitum.one/seed">
-    <img src="assets/aethersense-seed.png" alt="AetherSense - WiFi DensePose" width="100%">
+    <img src="assets/aethersense-seed.png" alt="AetherSense" width="100%">
   </a>
 </p>
 <p align="center">
@@ -75,18 +75,34 @@ AetherSense turns ordinary WiFi into a contactless sensor. A $9 ESP32 board read
 > 🤗 **Pretrained weights**: download from [`ruvnet/wifi-densepose-pretrained`](https://huggingface.co/ruvnet/wifi-densepose-pretrained) — see [Loading the pretrained model](#loading-the-pretrained-model) below for one-command setup.
 
 ```bash
-# Option 1: Docker (simulated data, no hardware needed)
-docker pull ruvnet/wifi-densepose:latest
-docker run -p 3000:3000 ruvnet/wifi-densepose:latest
-# Open http://localhost:3000
+# Option 1: Docker (simulated or live data)
+# Run the Rust-based sensing server with simulated data (UI on 3000, WebSocket on 3001):
+docker run -p 3000:3000 -p 3001:3001 -e CSI_SOURCE=simulated ruvnet/wifi-densepose:latest
+
+# Or run the Python-based sensing server with simulated data (UI on 8080, WebSocket on 8765):
+docker run -p 8080:8080 -p 8765:8765 ruvnet/wifi-densepose:python
+
+# Or run the complete stack via Docker Compose:
+docker-compose -f docker/docker-compose.yml up
 
 # Option 2a: Live sensing with ESP32-S3 hardware ($9)
-# Flash firmware, provision WiFi, and start sensing:
+# 1. Flash firmware, provision WiFi:
 python -m esptool --chip esp32s3 --port COM9 --baud 460800 \
   write_flash 0x0 bootloader.bin 0x8000 partition-table.bin \
   0xf000 ota_data_initial.bin 0x20000 esp32-csi-node.bin
 python firmware/esp32-csi-node/provision.py --port COM9 \
   --ssid "YourWiFi" --password "secret" --target-ip 192.168.1.20
+
+# 2. Run the local Python WebSocket backend (listens for ESP32 UDP packets on port 5005, broadcasts on port 8765):
+cd archive
+python -m v1.src.sensing.ws_server
+
+# 3. Serve the UI static files in a separate terminal (serves on port 3000, connects to backend on port 8765 automatically):
+cd ui
+python -m http.server 3000
+
+# Fallback: If no ESP32 hardware is connected, the Python backend automatically falls back to 
+# native Windows RSSI tracking (via netsh) on the active interface, or simulated telemetry.
 
 # Option 2b: WiFi 6 + 802.15.4 research sensing with ESP32-C6 ($6-10, ADR-110)
 # Same csi-node firmware compiled for the C6 target — picks up the C6
@@ -108,7 +124,7 @@ node scripts/rf-scan.js --port 5006           # Live RF room scan
 node scripts/snn-csi-processor.js --port 5006  # SNN real-time learning
 node scripts/mincut-person-counter.js --port 5006  # Correct person counting
 
-# Option 4: Python — live on PyPI (ADR-117)
+# Option 4: Python package — live on PyPI (ADR-117)
 pip install aethersense                        # or: pip install wifi-densepose
 # Both ship the same compiled PyO3 wheel (~250 KB, abi3-py310, Linux/macOS/Windows).
 # Add [client] for the asyncio WebSocket + paho-mqtt clients:
@@ -379,7 +395,7 @@ Each module is a small signed binary (~400 KB) that runs alongside the WiFi-Dens
 
 ## 🔬 How It Works
 
-WiFi routers flood every room with radio waves. When a person moves — or even breathes — those waves scatter differently. WiFi DensePose reads that scattering pattern and reconstructs what happened:
+WiFi routers flood every room with radio waves. When a person moves — or even breathes — those waves scatter differently. AetherSense reads that scattering pattern and reconstructs what happened:
 
 ```
 WiFi Router → radio waves pass through room → hit human body → scatter
@@ -496,7 +512,7 @@ These scenarios exploit WiFi's ability to penetrate solid materials — concrete
 <details>
 <summary><strong>🧠 Self-Learning WiFi AI (ADR-024)</strong> — Adaptive recognition, self-optimization, and intelligent anomaly detection</summary>
 
-Every WiFi signal that passes through a room creates a unique fingerprint of that space. WiFi-DensePose already reads these fingerprints to track people, but until now it threw away the internal "understanding" after each reading. The Self-Learning WiFi AI captures and preserves that understanding as compact, reusable vectors — and continuously optimizes itself for each new environment.
+Every WiFi signal that passes through a room creates a unique fingerprint of that space. AetherSense already reads these fingerprints to track people, but until now it threw away the internal "understanding" after each reading. The Self-Learning WiFi AI captures and preserves that understanding as compact, reusable vectors — and continuously optimizes itself for each new environment.
 
 **What it does in plain terms:**
 - Turns any WiFi signal into a 128-number "fingerprint" that uniquely describes what's happening in a room
@@ -649,4 +665,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-**WiFi DensePose** — Privacy-preserving human pose estimation through WiFi signals.
+**AetherSense** — Privacy-preserving human pose estimation through WiFi signals.
