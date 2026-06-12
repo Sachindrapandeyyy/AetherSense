@@ -9,7 +9,7 @@ import { CsiSimulator } from './csi-simulator.js?v=13';
 import { CnnEmbedder } from './cnn-embedder.js?v=13';
 import { FusionEngine } from './fusion-engine.js?v=13';
 import { PoseDecoder, KEYPOINT_NAMES } from './pose-decoder.js?v=13';
-import { CanvasRenderer } from './canvas-renderer.js?v=13';
+import { CanvasRenderer } from './canvas-renderer.js?v=15';
 
 // === MediaPipe State ===
 let mpHolistic = null;

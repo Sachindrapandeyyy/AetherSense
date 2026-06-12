@@ -113,15 +113,17 @@ export class CanvasRenderer {
   _drawFaceMesh(ctx, lm, w, h) {
     const n = lm.length;
 
+    // Helper: get iterable size (works for both Set and Array)
+    const getSize = (col) => col ? (col.size !== undefined ? col.size : col.length) || 0 : 0;
+
     // ── A. Dense Tessellation ─────────────────────────
-    const tess = (typeof FACEMESH_TESSELATION !== 'undefined') ? FACEMESH_TESSELATION : window.FACEMESH_TESSELATION;
-    if (tess && tess.length > 100) {
-      // MediaPipe's own triangulation (≈2800 edges)
-      ctx.strokeStyle = 'rgba(0, 229, 255, 0.22)';
-      ctx.lineWidth = 0.45;
+    const tess = window.FACEMESH_TESSELATION;
+    if (tess && getSize(tess) > 100) {
+      // MediaPipe's own triangulation (≈2800 edges) — may be a Set or Array
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.35)';
+      ctx.lineWidth = 0.5;
       ctx.beginPath();
-      for (let k = 0; k < tess.length; k++) {
-        const c = tess[k];
+      for (const c of tess) {
         const si = (c.start !== undefined) ? c.start : c[0];
         const ei = (c.end !== undefined) ? c.end : c[1];
         if (si < n && ei < n && lm[si] && lm[ei]) {
@@ -136,13 +138,12 @@ export class CanvasRenderer {
     }
 
     // ── B. Contours (eyes, brows, lips, oval) ────────
-    const contours = (typeof FACEMESH_CONTOURS !== 'undefined') ? FACEMESH_CONTOURS : window.FACEMESH_CONTOURS;
-    if (contours && contours.length > 0) {
-      ctx.strokeStyle = 'rgba(0, 229, 255, 0.55)';
-      ctx.lineWidth = 0.9;
+    const contours = window.FACEMESH_CONTOURS;
+    if (contours && getSize(contours) > 0) {
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.65)';
+      ctx.lineWidth = 1.0;
       ctx.beginPath();
-      for (let k = 0; k < contours.length; k++) {
-        const c = contours[k];
+      for (const c of contours) {
         const si = (c.start !== undefined) ? c.start : c[0];
         const ei = (c.end !== undefined) ? c.end : c[1];
         if (si < n && ei < n && lm[si] && lm[ei]) {
@@ -153,8 +154,8 @@ export class CanvasRenderer {
       ctx.stroke();
     } else {
       // Fallback contour paths
-      ctx.strokeStyle = 'rgba(0, 229, 255, 0.55)';
-      ctx.lineWidth = 0.9;
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.65)';
+      ctx.lineWidth = 1.0;
       for (const path of FACE_CONTOUR_PATHS) {
         ctx.beginPath();
         let first = true;
@@ -186,11 +187,11 @@ export class CanvasRenderer {
     }
 
     // ── D. ALL face landmark dots ────────────────────
-    ctx.fillStyle = 'rgba(0, 229, 255, 0.55)';
+    ctx.fillStyle = 'rgba(0, 229, 255, 0.65)';
     for (let i = 0; i < n; i++) {
       if (!lm[i]) continue;
       ctx.beginPath();
-      ctx.arc(lm[i].x * w, lm[i].y * h, 0.7, 0, Math.PI * 2);
+      ctx.arc(lm[i].x * w, lm[i].y * h, 1.0, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -218,8 +219,8 @@ export class CanvasRenderer {
     }
 
     if (this._cachedFaceMeshEdges && this._cachedFaceMeshEdges.length > 0) {
-      ctx.strokeStyle = 'rgba(0, 229, 255, 0.22)';
-      ctx.lineWidth = 0.45;
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.35)';
+      ctx.lineWidth = 0.5;
       ctx.beginPath();
       for (const [si, ei] of this._cachedFaceMeshEdges) {
         if (si < n && ei < n && lm[si] && lm[ei]) {
