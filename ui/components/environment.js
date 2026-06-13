@@ -45,6 +45,17 @@ export class Environment {
     this._buildConfidenceHeatmap();
 
     this.scene.add(this.group);
+
+    // Check for custom layout in localStorage
+    try {
+      const customLayout = localStorage.getItem('aethersense_custom_layout');
+      if (customLayout) {
+        const config = JSON.parse(customLayout);
+        this.loadLayoutFromConfig(config);
+      }
+    } catch (e) {
+      console.warn('[Environment] Failed to load custom layout from localStorage:', e);
+    }
   }
 
   _buildFloor() {
@@ -457,6 +468,141 @@ export class Environment {
     for (const line of this._signalLines) {
       line.material.opacity = 0.08 + Math.sin(elapsed * 1.5) * 0.05;
     }
+  }
+
+  _rebuildCustomZones() {
+    // 1. Remove all old zone groups from this.group
+    for (const zoneId of Object.keys(this._zoneMeshes || {})) {
+      const child = this.group.getObjectByName(`zone-${zoneId}`);
+      if (child) {
+        this.group.remove(child);
+        child.traverse((c) => {
+          if (c.geometry) c.geometry.dispose();
+          if (c.material) {
+            if (c.material.map) c.material.map.dispose();
+            c.material.dispose();
+          }
+        });
+      }
+    }
+    // 2. Build detection zones again
+    this._buildDetectionZones();
+  }
+
+  loadLayoutFromConfig(config) {
+    if (!config || !Array.isArray(config)) return;
+
+    // Clear existing static furniture first
+    const oldFurniture = this.group.getObjectByName('static-furniture');
+    if (oldFurniture) {
+      this.group.remove(oldFurniture);
+      oldFurniture.traverse((c) => {
+        if (c.geometry) c.geometry.dispose();
+        if (c.material) c.material.dispose();
+      });
+    }
+
+    this.furnitureGroup = new THREE.Group();
+    this.furnitureGroup.name = 'static-furniture';
+    this.group.add(this.furnitureGroup);
+
+    const zonesList = [];
+
+    for (const item of config) {
+      if (item.type === 'zone') {
+        zonesList.push({
+          id: item.id,
+          center: [item.position.x, item.position.y, item.position.z],
+          radius: item.radius,
+          color: item.color,
+          label: item.label
+        });
+      } else {
+        // Build static furniture meshes
+        const mesh = this._createFurnitureMesh(item.type, item.color);
+        mesh.position.set(item.position.x, item.position.y, item.position.z);
+        mesh.rotation.set(item.rotation.x, item.rotation.y, item.rotation.z);
+        mesh.scale.set(item.scale.x, item.scale.y, item.scale.z);
+        mesh.userData = { id: item.id, type: item.type };
+        this.furnitureGroup.add(mesh);
+      }
+    }
+
+    // Set zones list and rebuild them
+    if (zonesList.length > 0) {
+      this.zones = zonesList;
+      this._rebuildCustomZones();
+    } else {
+      // If no zones in config, reset to defaults or empty
+      this.zones = [
+        { id: 'zone_1', center: [-2, 0, 0], radius: 2, color: 0x0066ff, label: 'Zone 1' },
+        { id: 'zone_2', center: [0, 0, 0], radius: 2, color: 0x00cc66, label: 'Zone 2' },
+        { id: 'zone_3', center: [2, 0, 0], radius: 2, color: 0xff6600, label: 'Zone 3' }
+      ];
+      this._rebuildCustomZones();
+    }
+  }
+
+  _createFurnitureMesh(type, hexColor) {
+    const color = new THREE.Color(hexColor || 0x00aaff);
+    const mat = new THREE.MeshPhongMaterial({
+      color: color,
+      emissive: color,
+      emissiveIntensity: 0.1,
+      transparent: true,
+      opacity: 0.4,
+      side: THREE.DoubleSide
+    });
+    const wireMat = new THREE.MeshBasicMaterial({
+      color: color,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.8
+    });
+
+    const group = new THREE.Group();
+    if (type === 'bed') {
+      const base = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.3, 2.0), mat);
+      base.position.y = 0.15;
+      group.add(base);
+      const baseWire = new THREE.Mesh(new THREE.BoxGeometry(1.405, 0.305, 2.005), wireMat);
+      baseWire.position.y = 0.15;
+      group.add(baseWire);
+      const headboard = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.9, 0.1), mat);
+      headboard.position.set(0, 0.45, -1.0);
+      group.add(headboard);
+    } else if (type === 'couch') {
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.3, 0.8), mat);
+      seat.position.y = 0.15;
+      group.add(seat);
+      const seatWire = new THREE.Mesh(new THREE.BoxGeometry(1.805, 0.305, 0.805), wireMat);
+      seatWire.position.y = 0.15;
+      group.add(seatWire);
+      const back = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.7, 0.2), mat);
+      back.position.set(0, 0.5, -0.35);
+      group.add(back);
+    } else if (type === 'desk') {
+      const top = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.05, 0.8), mat);
+      top.position.y = 0.75;
+      group.add(top);
+      const legGeom = new THREE.CylinderGeometry(0.02, 0.02, 0.75);
+      const legPositions = [
+        [-0.7, 0.375, -0.35],
+        [0.7, 0.375, -0.35],
+        [-0.7, 0.375, 0.35],
+        [0.7, 0.375, 0.35]
+      ];
+      for (const pos of legPositions) {
+        const leg = new THREE.Mesh(legGeom, mat);
+        leg.position.set(...pos);
+        group.add(leg);
+      }
+    } else if (type === 'door') {
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(1.0, 2.0, 0.05), mat);
+      frame.position.y = 1.0;
+      group.add(frame);
+    }
+    return group;
   }
 
   getGroup() {

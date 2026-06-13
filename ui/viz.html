@@ -68,6 +68,159 @@
       right: 140px;
       z-index: 200;
     }
+
+    /* Room Designer UI Styles */
+    .designer-btn {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      z-index: 1000;
+      background: rgba(10, 15, 30, 0.85);
+      border: 1px solid #00aaff;
+      color: #00aaff;
+      padding: 10px 16px;
+      font-family: monospace;
+      font-size: 13px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-radius: 4px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0, 170, 255, 0.2);
+      transition: all 0.3s ease;
+      outline: none;
+    }
+    .designer-btn:hover {
+      background: #00aaff;
+      color: #050510;
+      box-shadow: 0 0 15px rgba(0, 170, 255, 0.4);
+    }
+    .designer-btn.active {
+      background: #ffaa00;
+      border-color: #ffaa00;
+      color: #050510;
+      box-shadow: 0 0 15px rgba(255, 170, 0, 0.4);
+    }
+    
+    #designer-sidebar {
+      position: absolute;
+      top: 75px;
+      left: 15px;
+      width: 280px;
+      background: rgba(5, 5, 15, 0.9);
+      border: 1px solid rgba(0, 170, 255, 0.3);
+      border-radius: 6px;
+      padding: 16px;
+      z-index: 999;
+      font-family: monospace;
+      font-size: 12px;
+      color: #88bbdd;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+    #designer-sidebar h3 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #aaddff;
+      border-bottom: 1px solid rgba(0, 170, 255, 0.2);
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+    }
+    .designer-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .designer-section h4 {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #446688;
+      letter-spacing: 1px;
+    }
+    .designer-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+    .designer-tool-btn {
+      background: rgba(20, 30, 50, 0.8);
+      border: 1px solid rgba(0, 170, 255, 0.3);
+      color: #88bbdd;
+      padding: 8px 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 11px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      outline: none;
+    }
+    .designer-tool-btn:hover {
+      border-color: #00aaff;
+      color: #00aaff;
+      background: rgba(0, 170, 255, 0.1);
+    }
+    .designer-tool-btn.danger {
+      border-color: rgba(255, 60, 90, 0.4);
+      color: #ff3355;
+    }
+    .designer-tool-btn.danger:hover {
+      border-color: #ff3355;
+      background: rgba(255, 51, 85, 0.1);
+    }
+    
+    .designer-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: rgba(10, 15, 30, 0.5);
+      border: 1px dashed rgba(0, 170, 255, 0.2);
+      border-radius: 4px;
+      padding: 10px;
+    }
+    .designer-input-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .designer-input-row label {
+      color: #6688aa;
+    }
+    .designer-input-row input[type="text"] {
+      background: #050510;
+      border: 1px solid rgba(0, 170, 255, 0.3);
+      border-radius: 2px;
+      color: #aaddff;
+      padding: 2px 6px;
+      font-family: monospace;
+      width: 120px;
+      outline: none;
+    }
+    .designer-input-row input[type="range"] {
+      width: 100px;
+      accent-color: #ffaa00;
+    }
+    .designer-input-row input[type="color"] {
+      border: none;
+      background: none;
+      cursor: pointer;
+      width: 32px;
+      height: 20px;
+    }
+    
+    .designer-help-box {
+      font-size: 10px;
+      color: #446688;
+      border: 1px solid rgba(0, 170, 255, 0.1);
+      background: rgba(0, 170, 255, 0.02);
+      padding: 8px;
+      border-radius: 4px;
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
@@ -82,6 +235,64 @@
     </div>
     <!-- Stats.js container -->
     <div id="stats-container"></div>
+
+    <!-- Room Designer Controls -->
+    <button id="designer-toggle-btn" class="designer-btn">🛠️ Design Mode</button>
+    <div id="designer-sidebar">
+      <h3>Room Designer</h3>
+      
+      <div class="designer-section">
+        <h4>Spawn Assets</h4>
+        <div class="designer-grid">
+          <button class="designer-tool-btn" id="btn-spawn-bed">🛌 Bed</button>
+          <button class="designer-tool-btn" id="btn-spawn-couch">🛋️ Couch</button>
+          <button class="designer-tool-btn" id="btn-spawn-desk">🪑 Desk</button>
+          <button class="designer-tool-btn" id="btn-spawn-door">🚪 Door</button>
+        </div>
+      </div>
+      
+      <div class="designer-section">
+        <h4>Spawn Zones</h4>
+        <div class="designer-grid" style="grid-template-columns: 1fr;">
+          <button class="designer-tool-btn" id="btn-spawn-zone" style="border-color:#ffaa00;color:#ffaa00;">➕ Sensor Zone</button>
+        </div>
+      </div>
+
+      <div class="designer-section" id="selection-panel" style="display: none;">
+        <h4>Selected Item</h4>
+        <div class="designer-input-group">
+          <div class="designer-input-row">
+            <label>Label</label>
+            <input type="text" id="sel-obj-label" value="">
+          </div>
+          <div class="designer-input-row" id="sel-zone-radius-row" style="display: none;">
+            <label>Radius</label>
+            <input type="range" id="sel-zone-radius" min="0.5" max="4.0" step="0.1" value="1.5">
+            <span id="sel-zone-radius-val">1.5m</span>
+          </div>
+          <div class="designer-input-row">
+            <label>Color</label>
+            <input type="color" id="sel-obj-color" value="#00aaff">
+          </div>
+          <button class="designer-tool-btn danger" id="btn-delete-selected" style="margin-top: 6px; width: 100%;">🗑️ Delete Selected</button>
+        </div>
+      </div>
+
+      <div class="designer-section">
+        <h4>Layout Actions</h4>
+        <div class="designer-grid">
+          <button class="designer-tool-btn" id="btn-export-layout" style="border-color:#00cc88;color:#00cc88;">💾 Export</button>
+          <button class="designer-tool-btn danger" id="btn-clear-layout">⚠️ Clear All</button>
+        </div>
+      </div>
+
+      <div class="designer-help-box">
+        <strong>Keyboard Shortcuts:</strong><br>
+        • [W] Translate | [E] Rotate | [R] Scale<br>
+        • [Delete/Backspace] Delete object<br>
+        • [Esc] Deselect
+      </div>
+    </div>
   </div>
 
   <!-- Three.js r160 dropped examples/js/ UMD builds. Load via importmap and
@@ -119,6 +330,7 @@
     const { WebSocketClient } = await import('./services/websocket-client.js');
     const { DataProcessor } = await import('./services/data-processor.js');
     const { buildSensingWsUrl } = await import('./services/sensing.service.js');
+    const { RoomDesigner } = await import('./components/designer.js');
 
     // -- Application State --
     const state = {
@@ -130,6 +342,7 @@
       wsClient: null,
       dataProcessor: null,
       stats: null,
+      designer: null,
       isDemoMode: true,
       startTime: Date.now()
     };
@@ -192,6 +405,17 @@
 
         // 7. Stats.js
         state.stats = initStats();
+
+        // 7b. Initialize Room Designer
+        state.designer = new RoomDesigner(
+          state.scene.getScene(),
+          state.scene.getCamera(),
+          state.scene.getRenderer().domElement,
+          state.scene.getControls(),
+          state.environment
+        );
+        setupDesignerUI();
+
         setLoadingProgress(85, 'Connecting to server...');
 
         // 8. WebSocket client — derive URL from window.location so the page
@@ -337,6 +561,7 @@
 
     // -- Cleanup on page unload --
     window.addEventListener('beforeunload', () => {
+      if (state.designer) state.designer.clearAll();
       if (state.wsClient) state.wsClient.dispose();
       if (state.bodyModelManager) state.bodyModelManager.dispose();
       if (state.signalViz) state.signalViz.dispose();
@@ -368,6 +593,131 @@
           break;
       }
     });
+
+    // -- Setup Room Designer Toolbar Controls --
+    function setupDesignerUI() {
+      const toggleBtn = document.getElementById('designer-toggle-btn');
+      const sidebar = document.getElementById('designer-sidebar');
+      const spawnBed = document.getElementById('btn-spawn-bed');
+      const spawnCouch = document.getElementById('btn-spawn-couch');
+      const spawnDesk = document.getElementById('btn-spawn-desk');
+      const spawnDoor = document.getElementById('btn-spawn-door');
+      const spawnZone = document.getElementById('btn-spawn-zone');
+      const selPanel = document.getElementById('selection-panel');
+      const selLabel = document.getElementById('sel-obj-label');
+      const selColor = document.getElementById('sel-obj-color');
+      const selRadiusRow = document.getElementById('sel-zone-radius-row');
+      const selRadius = document.getElementById('sel-zone-radius');
+      const selRadiusVal = document.getElementById('sel-zone-radius-val');
+      const deleteBtn = document.getElementById('btn-delete-selected');
+      const exportBtn = document.getElementById('btn-export-layout');
+      const clearBtn = document.getElementById('btn-clear-layout');
+
+      // Toggle Designer Mode
+      toggleBtn.addEventListener('click', () => {
+        const active = !state.designer.active;
+        if (active) {
+          state.designer.enable();
+          toggleBtn.classList.add('active');
+          toggleBtn.textContent = '🛠️ Exit Designer';
+          sidebar.style.display = 'flex';
+          state.isDemoMode = false; // Pause standard movements
+        } else {
+          state.designer.disable();
+          toggleBtn.classList.remove('active');
+          toggleBtn.textContent = '🛠️ Design Mode';
+          sidebar.style.display = 'none';
+          
+          // Save Layout to localStorage
+          const json = state.designer.exportJSON();
+          localStorage.setItem('aethersense_custom_layout', json);
+          
+          state.isDemoMode = true; // Resume standard visualization
+        }
+      });
+
+      // Spawn commands
+      spawnBed.addEventListener('click', () => state.designer.spawn('bed'));
+      spawnCouch.addEventListener('click', () => state.designer.spawn('couch'));
+      spawnDesk.addEventListener('click', () => state.designer.spawn('desk'));
+      spawnDoor.addEventListener('click', () => state.designer.spawn('door'));
+      spawnZone.addEventListener('click', () => {
+        const zoneCount = state.designer.objects.filter(o => o.userData.type === 'zone').length + 1;
+        state.designer.spawn('zone', {
+          label: `Zone ${zoneCount}`,
+          radius: 1.5,
+          color: 0xffaa00
+        });
+      });
+
+      // Event listener for Selection updates
+      state.designer.onObjectSelected = (obj) => {
+        if (obj) {
+          selPanel.style.display = 'flex';
+          selLabel.value = obj.userData.label || '';
+          selColor.value = '#' + new THREE.Color(obj.userData.color).getHexString();
+          
+          if (obj.userData.type === 'zone') {
+            selRadiusRow.style.display = 'flex';
+            selRadius.value = obj.userData.radius || 1.5;
+            selRadiusVal.textContent = (obj.userData.radius || 1.5).toFixed(1) + 'm';
+          } else {
+            selRadiusRow.style.display = 'none';
+          }
+        } else {
+          selPanel.style.display = 'none';
+        }
+      };
+
+      // Bidirectional binds
+      selLabel.addEventListener('input', () => {
+        state.designer.setSelectedLabel(selLabel.value);
+      });
+
+      selColor.addEventListener('input', () => {
+        state.designer.setSelectedColor(selColor.value);
+      });
+
+      selRadius.addEventListener('input', () => {
+        const val = parseFloat(selRadius.value);
+        selRadiusVal.textContent = val.toFixed(1) + 'm';
+        state.designer.setSelectedZoneRadius(val);
+      });
+
+      deleteBtn.addEventListener('click', () => {
+        state.designer.deleteSelected();
+      });
+
+      // Clear all layout assets
+      clearBtn.addEventListener('click', () => {
+        if (confirm('Clear entire layout? This will delete all custom furniture and zones.')) {
+          state.designer.clearAll();
+          localStorage.removeItem('aethersense_custom_layout');
+        }
+      });
+
+      // Export JSON layout file
+      exportBtn.addEventListener('click', () => {
+        const json = state.designer.exportJSON();
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'aethersense_room_layout.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      // Auto-load layout on startup
+      try {
+        const customLayout = localStorage.getItem('aethersense_custom_layout');
+        if (customLayout) {
+          state.designer.loadJSON(customLayout);
+        }
+      } catch (e) {
+        console.warn('[Designer UI] Failed to preload custom layout:', e);
+      }
+    }
 
     // -- Start --
     init();
