@@ -32,11 +32,11 @@ Every WiFi router already fills your space with radio waves. When people move, b
 - **Environment mapping** — RF fingerprinting identifies rooms, detects moved furniture, spots new objects
 - **Sleep quality** — overnight monitoring with sleep stage classification and apnea screening
 
-Built on [RuVector](https://github.com/ruvnet/ruvector/) and [Cognitum Seed](https://cognitum.one), AetherSense runs entirely on edge hardware — an ESP32 mesh (as low as $9 per node) paired with a Cognitum Seed for persistent memory, cryptographic attestation, and AI integration. No cloud, no cameras, no internet required.
+Built on [RuVector](https://github.com/Sachindrapandeyyy/ruvector/) and [Cognitum Seed](https://cognitum.one), AetherSense runs entirely on edge hardware — an ESP32 mesh (as low as $9 per node) paired with a Cognitum Seed for persistent memory, cryptographic attestation, and AI integration. No cloud, no cameras, no internet required.
 
 The system learns each environment locally using spiking neural networks that adapt in under 30 seconds, with multi-frequency mesh scanning across 6 WiFi channels that uses your neighbors' routers as free radar illuminators. Every measurement is cryptographically attested via an Ed25519 witness chain.
 
-AetherSense turns ordinary WiFi into a contactless sensor. A $9 ESP32 board reads the radio reflections off the people in a room, and a small pretrained model — published on Hugging Face at [`ruvnet/wifi-densepose-pretrained`](https://huggingface.co/ruvnet/wifi-densepose-pretrained) — tells you who's there, how they're breathing, and how their heart rate is trending. The model fits in 8 KB (4-bit quantized) and runs in microseconds on a Raspberry Pi. (The [v2 encoder](https://huggingface.co/ruvnet/wifi-densepose-pretrained) reports an honest, label-free held-out **temporal-triplet accuracy of 82.3%** — up from 66.4% raw; the older "100% presence" figure was measured on a single-class recording and has been retracted in favor of this.) No cameras, no wearables, no app on the user's phone.
+AetherSense turns ordinary WiFi into a contactless sensor. A $9 ESP32 board reads the radio reflections off the people in a room, and a small pretrained model — published on Hugging Face at [`Sachindrapandeyyy/wifi-densepose-pretrained`](https://huggingface.co/Sachindrapandeyyy/wifi-densepose-pretrained) — tells you who's there, how they're breathing, and how their heart rate is trending. The model fits in 8 KB (4-bit quantized) and runs in microseconds on a Raspberry Pi. (The [v2 encoder](https://huggingface.co/Sachindrapandeyyy/wifi-densepose-pretrained) reports an honest, label-free held-out **temporal-triplet accuracy of 82.3%** — up from 66.4% raw; the older "100% presence" figure was measured on a single-class recording and has been retracted in favor of this.) No cameras, no wearables, no app on the user's phone.
 
 ### Built for low-power edge applications
 
@@ -46,7 +46,7 @@ AetherSense turns ordinary WiFi into a contactless sensor. A $9 ESP32 board read
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests: 1463](https://img.shields.io/badge/tests-1463%20passed-brightgreen.svg)](https://github.com/Sachindrapandeyyy/AetherSense)
 [![CI/CD: Validated](https://img.shields.io/badge/CI%2FCD-validated-brightgreen.svg)](#-cicd--local-verification)
-[![Docker: multi-arch](https://img.shields.io/badge/docker-amd64%20%2B%20arm64-blue.svg)](https://hub.docker.com/r/ruvnet/wifi-densepose)
+[![Docker: multi-arch](https://img.shields.io/badge/docker-amd64%20%2B%20arm64-blue.svg)](https://hub.docker.com/r/Sachindrapandeyyy/wifi-densepose)
 [![Vital Signs](https://img.shields.io/badge/vital%20signs-breathing%20%2B%20heartbeat-red.svg)](#vital-sign-detection)
 [![ESP32 Ready](https://img.shields.io/badge/ESP32--S3-CSI%20streaming-purple.svg)](#esp32-s3-hardware-pipeline)
 [![crates.io](https://img.shields.io/crates/v/wifi-densepose-ruvector.svg)](https://crates.io/crates/wifi-densepose-ruvector)
@@ -57,9 +57,9 @@ AetherSense turns ordinary WiFi into a contactless sensor. A $9 ESP32 board read
 > |------|-----|---------------|
 > | 🫁 **Breathing rate** | Bandpass 0.1–0.5 Hz on wrapped phase, circular variance, zero-crossing BPM ([#593](https://github.com/Sachindrapandeyyy/AetherSense/issues/593)) | 6–30 BPM, real-time |
 > | 💓 **Heart rate** | Bandpass 0.8–2.0 Hz, zero-crossing BPM | 40–120 BPM, real-time |
-> | 👤 **Presence detection** | Trained head on Hugging Face ([`ruvnet/wifi-densepose-pretrained`](https://huggingface.co/ruvnet/wifi-densepose-pretrained); v2 encoder = 82.3% held-out temporal-triplet acc, honestly re-benchmarked) + a phase-variance fallback that needs no model | < 1 ms, ~30 s ambient calibration |
+> | 👤 **Presence detection** | Trained head on Hugging Face ([`Sachindrapandeyyy/wifi-densepose-pretrained`](https://huggingface.co/Sachindrapandeyyy/wifi-densepose-pretrained); v2 encoder = 82.3% held-out temporal-triplet acc, honestly re-benchmarked) + a phase-variance fallback that needs no model | < 1 ms, ~30 s ambient calibration |
 > | 🧬 **CSI embeddings** | 128-dim contrastive encoder shipped on Hugging Face, 4-bit quantised variant fits in 8 KB | **164,183 emb/s** on M4 Pro |
-> | 🦴 **17-keypoint pose estimation** | `cog-pose-estimation` Cog v0.0.1 — signed aarch64 + x86_64 binaries on GCS, loads `pose_v1.safetensors` via Candle. Train your own from paired data in 2.1 s on an RTX 5080 ([ADR-101](docs/adr/ADR-101-pose-estimation-cog.md), [benchmarks](docs/benchmarks/pose-estimation-cog.md)). **SOTA on MM-Fi:** [`ruvnet/wifi-densepose-mmfi-pose`](https://huggingface.co/ruvnet/wifi-densepose-mmfi-pose) hits **82.69% torso-PCK@20** (ensemble 83.59%), beating MultiFormer (72.25%) and CSI2Pose (68.41%) on the matched MM-Fi `random_split` protocol — self-corrected and auditable on [AetherArena](https://huggingface.co/spaces/ruvnet/aether-arena) | 8.4 ms cold-start on a Pi 5 |
+> | 🦴 **17-keypoint pose estimation** | `cog-pose-estimation` Cog v0.0.1 — signed aarch64 + x86_64 binaries on GCS, loads `pose_v1.safetensors` via Candle. Train your own from paired data in 2.1 s on an RTX 5080 ([ADR-101](docs/adr/ADR-101-pose-estimation-cog.md), [benchmarks](docs/benchmarks/pose-estimation-cog.md)). **SOTA on MM-Fi:** [`Sachindrapandeyyy/wifi-densepose-mmfi-pose`](https://huggingface.co/Sachindrapandeyyy/wifi-densepose-mmfi-pose) hits **82.69% torso-PCK@20** (ensemble 83.59%), beating MultiFormer (72.25%) and CSI2Pose (68.41%) on the matched MM-Fi `random_split` protocol — self-corrected and auditable on [AetherArena](https://huggingface.co/spaces/Sachindrapandeyyy/aether-arena) | 8.4 ms cold-start on a Pi 5 |
 > | 🚶 **Motion / activity** | Motion-band power + phase acceleration | Real-time |
 > | 🤸 **Fall detection** | Phase-acceleration threshold + 3-frame debounce + 5 s cooldown ([#263](https://github.com/Sachindrapandeyyy/AetherSense/issues/263)) | < 200 ms |
 > | 🧮 **Multi-person count** | Adaptive P95 normalisation + runtime-tunable dedup factor (`/api/v1/config/dedup-factor`, [#491](https://github.com/Sachindrapandeyyy/AetherSense/pull/491)). Six specialised learned counters available as Cogs: `occupancy-zones`, `elevator-count`, `queue-length`, `customer-flow`, `clean-room`, `person-matching` | Real-time, self-calibrating |
@@ -73,15 +73,15 @@ AetherSense turns ordinary WiFi into a contactless sensor. A $9 ESP32 board read
 >
 > Browse the full 105-module catalog (with practical descriptions, sizes, and difficulty) below in [🧩 Edge Module Catalog](#-edge-module-catalog), or visit [seed.cognitum.one/store](https://seed.cognitum.one/store).
 >
-> 🤗 **Pretrained weights**: download from [`ruvnet/wifi-densepose-pretrained`](https://huggingface.co/ruvnet/wifi-densepose-pretrained) — see [Loading the pretrained model](#loading-the-pretrained-model) below for one-command setup.
+> 🤗 **Pretrained weights**: download from [`Sachindrapandeyyy/wifi-densepose-pretrained`](https://huggingface.co/Sachindrapandeyyy/wifi-densepose-pretrained) — see [Loading the pretrained model](#loading-the-pretrained-model) below for one-command setup.
 
 ```bash
 # Option 1: Docker (simulated or live data)
 # Run the Rust-based sensing server with simulated data (UI on 3000, WebSocket on 3001):
-docker run -p 3000:3000 -p 3001:3001 -e CSI_SOURCE=simulated ruvnet/wifi-densepose:latest
+docker run -p 3000:3000 -p 3001:3001 -e CSI_SOURCE=simulated Sachindrapandeyyy/wifi-densepose:latest
 
 # Or run the Python-based sensing server with simulated data (UI on 8080, WebSocket on 8765):
-docker run -p 8080:8080 -p 8765:8765 ruvnet/wifi-densepose:python
+docker run -p 8080:8080 -p 8765:8765 Sachindrapandeyyy/wifi-densepose:python
 
 # Or run the complete stack via Docker Compose:
 docker-compose -f docker/docker-compose.yml up
@@ -156,35 +156,35 @@ pip install "aethersense[client]"              # or: pip install "wifi-densepose
 ---
 
 
-  <a href="https://ruvnet.github.io/AetherSense/">
+  <a href="https://Sachindrapandeyyy.github.io/AetherSense/">
     <img src="assets/v2-screen.png" alt="WiFi DensePose — Live pose detection with setup guide" width="800">
   </a>
   <br>
   <em>Real-time pose skeleton from WiFi CSI signals — no cameras, no wearables</em>
   <br><br>
-  <a href="https://ruvnet.github.io/AetherSense/"><strong>▶ Live Observatory Demo</strong></a>
+  <a href="https://Sachindrapandeyyy.github.io/AetherSense/"><strong>▶ Live Observatory Demo</strong></a>
   &nbsp;|&nbsp;
-  <a href="https://ruvnet.github.io/AetherSense/pose-fusion.html"><strong>▶ Dual-Modal Pose Fusion Demo</strong></a>
+  <a href="https://Sachindrapandeyyy.github.io/AetherSense/pose-fusion.html"><strong>▶ Dual-Modal Pose Fusion Demo</strong></a>
   &nbsp;|&nbsp;
-  <a href="https://ruvnet.github.io/AetherSense/pointcloud/"><strong>▶ Live 3D Point Cloud</strong></a>
+  <a href="https://Sachindrapandeyyy.github.io/AetherSense/pointcloud/"><strong>▶ Live 3D Point Cloud</strong></a>
   &nbsp;|&nbsp;
-  <a href="https://ruvnet.github.io/AetherSense/three.js/"><strong>▶ three.js Demos (5)</strong></a>
+  <a href="https://Sachindrapandeyyy.github.io/AetherSense/three.js/"><strong>▶ three.js Demos (5)</strong></a>
 
 > The [server](#-quick-start) is optional for visualization and aggregation — the ESP32 [runs independently](#esp32-s3-hardware-pipeline) for presence detection, vital signs, and fall alerts.
 >
-> **Live ESP32 pipeline**: Connect an ESP32-S3 node → run the [sensing server](#sensing-server) → open the [pose fusion demo](https://ruvnet.github.io/AetherSense/pose-fusion.html) for real-time dual-modal pose estimation (webcam + WiFi CSI). See [ADR-059](docs/adr/ADR-059-live-esp32-csi-pipeline.md).
+> **Live ESP32 pipeline**: Connect an ESP32-S3 node → run the [sensing server](#sensing-server) → open the [pose fusion demo](https://Sachindrapandeyyy.github.io/AetherSense/pose-fusion.html) for real-time dual-modal pose estimation (webcam + WiFi CSI). See [ADR-059](docs/adr/ADR-059-live-esp32-csi-pipeline.md).
 >
-> **three.js scene gallery** at [`/three.js/`](https://ruvnet.github.io/AetherSense/three.js/) — five progressively richer ADR-097 demos: helpers, cinematic, GLTF skinned, FBX skinned, and a live MediaPipe→Mixamo retargeting feed driven by ESP32 CSI. Demos 04 and 05 require a local Mixamo `X Bot.fbx` (license boundary — not redistributed).
+> **three.js scene gallery** at [`/three.js/`](https://Sachindrapandeyyy.github.io/AetherSense/three.js/) — five progressively richer ADR-097 demos: helpers, cinematic, GLTF skinned, FBX skinned, and a live MediaPipe→Mixamo retargeting feed driven by ESP32 CSI. Demos 04 and 05 require a local Mixamo `X Bot.fbx` (license boundary — not redistributed).
 
 
 ## 🤗 Pretrained model on Hugging Face
 
-Pretrained CSI weights live at [`ruvnet/wifi-densepose-pretrained`](https://huggingface.co/ruvnet/wifi-densepose-pretrained) — 12.2M training steps on 60K frames / 610K contrastive triplets, **82.3% held-out temporal-triplet accuracy** (up from 66.4% raw; the older "100% presence" figure was measured on a single-class recording and has been retracted), 4-bit quantized variant fits in 8 KB. The release includes a contrastive **CSI encoder** producing 128-dim embeddings (164,183 emb/s on M4 Pro) and a **presence-detection head**. Per-node LoRA adapters are included for environment-specific fine-tuning.
+Pretrained CSI weights live at [`Sachindrapandeyyy/wifi-densepose-pretrained`](https://huggingface.co/Sachindrapandeyyy/wifi-densepose-pretrained) — 12.2M training steps on 60K frames / 610K contrastive triplets, **82.3% held-out temporal-triplet accuracy** (up from 66.4% raw; the older "100% presence" figure was measured on a single-class recording and has been retracted), 4-bit quantized variant fits in 8 KB. The release includes a contrastive **CSI encoder** producing 128-dim embeddings (164,183 emb/s on M4 Pro) and a **presence-detection head**. Per-node LoRA adapters are included for environment-specific fine-tuning.
 
 ```bash
 # Download the model bundle
 pip install huggingface_hub
-huggingface-cli download ruvnet/wifi-densepose-pretrained --local-dir models/wifi-densepose-pretrained
+huggingface-cli download Sachindrapandeyyy/wifi-densepose-pretrained --local-dir models/wifi-densepose-pretrained
 ```
 
 **What works today vs. what's pending wiring:**
@@ -199,17 +199,17 @@ huggingface-cli download ruvnet/wifi-densepose-pretrained --local-dir models/wif
 
 **Quantization choices** (all in the HF repo): `model-q2.bin` (4 KB) · `model-q4.bin` ⭐ recommended (8 KB) · `model-q8.bin` (16 KB) · `model.safetensors` full (48 KB)
 
-The separate **17-keypoint pose-estimation model** is now published at [`ruvnet/wifi-densepose-mmfi-pose`](https://huggingface.co/ruvnet/wifi-densepose-mmfi-pose) — **82.69% torso-PCK@20** on MM-Fi (single model) / **83.59%** (3-model ensemble + TTA), beating the prior published SOTA MultiFormer (72.25%) and CSI2Pose (68.41%) on the matched `random_split` protocol. See **Results & proof** below.
+The separate **17-keypoint pose-estimation model** is now published at [`Sachindrapandeyyy/wifi-densepose-mmfi-pose`](https://huggingface.co/Sachindrapandeyyy/wifi-densepose-mmfi-pose) — **82.69% torso-PCK@20** on MM-Fi (single model) / **83.59%** (3-model ensemble + TTA), beating the prior published SOTA MultiFormer (72.25%) and CSI2Pose (68.41%) on the matched `random_split` protocol. See **Results & proof** below.
 
 ### Results & proof
 
 | What | Where | Numbers |
 |------|-------|---------|
-| **MM-Fi pose model (SOTA)** | [`ruvnet/wifi-densepose-mmfi-pose`](https://huggingface.co/ruvnet/wifi-densepose-mmfi-pose) | 82.69% torso-PCK@20 (single) · 83.59% (ensemble+TTA) · 75K-param micro variant 74.30% |
-| **AetherArena benchmark Space** | [`ruvnet/aether-arena`](https://huggingface.co/spaces/ruvnet/aether-arena) | self-correcting, auditable MM-Fi leaderboard |
+| **MM-Fi pose model (SOTA)** | [`Sachindrapandeyyy/wifi-densepose-mmfi-pose`](https://huggingface.co/Sachindrapandeyyy/wifi-densepose-mmfi-pose) | 82.69% torso-PCK@20 (single) · 83.59% (ensemble+TTA) · 75K-param micro variant 74.30% |
+| **AetherArena benchmark Space** | [`Sachindrapandeyyy/aether-arena`](https://huggingface.co/spaces/Sachindrapandeyyy/aether-arena) | self-correcting, auditable MM-Fi leaderboard |
 | **Full MM-Fi study (honest picture)** | [`docs/benchmarks/mmfi-wifi-sensing-study.md`](docs/benchmarks/mmfi-wifi-sensing-study.md) | pose + action; zero-shot cross-subject ~64%, +~30 s in-room calibration → 72.2% |
 | **Efficiency frontier** | [`docs/benchmarks/wifi-pose-efficiency-frontier.md`](docs/benchmarks/wifi-pose-efficiency-frontier.md) | SOTA-beating WiFi pose in a 20 KB int4 edge model |
-| **Pretrained encoder** | [`ruvnet/wifi-densepose-pretrained`](https://huggingface.co/ruvnet/wifi-densepose-pretrained) | 82.3% held-out temporal-triplet, 8 KB int4 |
+| **Pretrained encoder** | [`Sachindrapandeyyy/wifi-densepose-pretrained`](https://huggingface.co/Sachindrapandeyyy/wifi-densepose-pretrained) | 82.3% held-out temporal-triplet, 8 KB int4 |
 | **Reproducible proof (Trust Kill Switch)** | [`archive/v1/data/proof/verify.py`](archive/v1/data/proof/verify.py) + [`expected_features.sha256`](archive/v1/data/proof/expected_features.sha256) | one-command deterministic pipeline replay (SHA-256 of output vs published hash) |
 | **Benchmark-proof ADR** | [ADR-147](docs/adr/ADR-147-benchmark-proof.md) | how the numbers are produced and verified |
 | **Witness attestation** | [`docs/WITNESS-LOG-028.md`](docs/WITNESS-LOG-028.md) | 33-row capability attestation matrix with per-claim evidence |
@@ -598,7 +598,7 @@ AetherSense ships a [Claude Code](https://docs.anthropic.com/en/docs/claude-code
 
 ```bash
 # In Claude Code — add this repo as a plugin marketplace, then install:
-/plugin marketplace add ruvnet/AetherSense
+/plugin marketplace add Sachindrapandeyyy/AetherSense
 /plugin install aethersense@aethersense
 
 # Or try it for one session without installing (from a local clone of the repo):
@@ -628,12 +628,12 @@ Verify the plugin structure: `bash plugins/aethersense/scripts/smoke.sh`. Full d
 | [Build Guide](docs/build-guide.md) | Building from source (Rust and Python) |
 | [**Home Assistant + Matter Integration**](docs/integrations/home-assistant.md) | **Works with Home Assistant** via MQTT auto-discovery + **Works with Matter** (Apple Home / Google Home / Alexa / SmartThings) — full entity catalog, 3 starter blueprints, Lovelace dashboards, privacy mode, threshold tuning ([ADR-115](docs/adr/ADR-115-home-assistant-integration.md)). |
 | [**BFLD — Beamforming Feedback Layer for Detection**](v2/crates/wifi-densepose-bfld/README.md) | New privacy-gated WiFi sensing layer that measures + structurally prevents identity leakage from 802.11ac/ax Beamforming Feedback Information. Three type-enforced invariants (raw BFI never exits node, identity embedding is in-RAM-only, cross-site correlation cryptographically impossible via per-site BLAKE3 keyed hash + daily rotation). Ships full operator surface (`BfldPipeline`, `BfldPipelineHandle`, Soul Signature `SoulMatchOracle` integration), MQTT topic router + HA-DISCO + availability + LWT, 3 operator HA blueprints, two runnable examples, eclipse-mosquitto:2 CI service container. 327+ tests. [ADR-118](docs/adr/ADR-118-bfld-beamforming-feedback-layer-for-detection.md) umbrella + sub-ADRs [119](docs/adr/ADR-119-bfld-frame-format-and-wire-protocol.md)/[120](docs/adr/ADR-120-bfld-privacy-class-and-hash-rotation.md)/[121](docs/adr/ADR-121-bfld-identity-risk-scoring.md)/[122](docs/adr/ADR-122-bfld-aethersense-ha-matter-exposure.md)/[123](docs/adr/ADR-123-bfld-capture-path-nexmon-and-esp32.md). Research dossier: [`docs/research/BFLD/`](docs/research/BFLD/) (11 files, 13,544 words). |
-| [**SENSE-BRIDGE — rvagent MCP server**](tools/aethersense-mcp/README.md) | Dual-transport MCP server (`@ruvnet/rvagent`) bridging the AetherSense sensing stack to AI agents (Claude Code, Cursor, ruflo swarms). 6 tools wired: `aethersense.presence.now`, `aethersense.vitals.get_{breathing,heart_rate,all}`, `aethersense.bfld.last_scan`, `aethersense.bfld.subscribe`. stdio + Streamable HTTP (`POST /mcp`, Origin-validated, bearer-token auth, `127.0.0.1` bind). Full 20-tool Zod schema barrel + 5 AETHERSENSE-POLICY governance tools. 93 tests. [ADR-124](docs/adr/ADR-124-rvagent-mcp-ruvector-npm-integration.md). Try: `npx @ruvnet/rvagent stdio`. |
+| [**SENSE-BRIDGE — rvagent MCP server**](tools/aethersense-mcp/README.md) | Dual-transport MCP server (`@Sachindrapandeyyy/rvagent`) bridging the AetherSense sensing stack to AI agents (Claude Code, Cursor, ruflo swarms). 6 tools wired: `aethersense.presence.now`, `aethersense.vitals.get_{breathing,heart_rate,all}`, `aethersense.bfld.last_scan`, `aethersense.bfld.subscribe`. stdio + Streamable HTTP (`POST /mcp`, Origin-validated, bearer-token auth, `127.0.0.1` bind). Full 20-tool Zod schema barrel + 5 AETHERSENSE-POLICY governance tools. 93 tests. [ADR-124](docs/adr/ADR-124-rvagent-mcp-ruvector-npm-integration.md). Try: `npx @Sachindrapandeyyy/rvagent stdio`. |
 | [Semantic Primitives — Precision/Recall](docs/integrations/semantic-primitives-metrics.md) | Per-primitive F1 on the held-out paired-capture set: someone-sleeping, possible-distress, room-active, elderly-inactivity-anomaly, meeting, bathroom, fall-risk, bed-exit, no-movement, multi-room. |
 | [Claude Code / Codex Plugin](plugins/aethersense/README.md) | The `aethersense` plugin + marketplace — skills, `/aethersense-*` commands, agents, and the Codex prompt mirror |
 | [Architecture Decisions](docs/adr/README.md) | 96 ADRs — why each technical choice was made, organized by domain (hardware, signal processing, ML, platform, infrastructure) |
 | [Domain Models](docs/ddd/README.md) | 8 DDD models (RuvSense, Signal Processing, Training Pipeline, Hardware Platform, Sensing Server, WiFi-Mat, CHCI, rvCSI) — bounded contexts, aggregates, domain events, and ubiquitous language |
-| [rvCSI — edge RF sensing runtime](https://github.com/ruvnet/rvcsi) | Rust-first / TypeScript-accessible / hardware-abstracted CSI runtime: multi-source ingestion (incl. real nexmon_csi `.pcap` from a **Raspberry Pi 5** / Pi 4 / Pi 3B+ — CYW43455 / BCM43455c0) → validation → DSP → typed events → RuVector RF memory ([ADR-095](docs/adr/ADR-095-rvcsi-edge-rf-sensing-platform.md), [ADR-096](docs/adr/ADR-096-rvcsi-ffi-crate-layout.md), [domain model](docs/ddd/rvcsi-domain-model.md)). Now its own repo — [`ruvnet/rvcsi`](https://github.com/ruvnet/rvcsi) — vendored here under `vendor/rvcsi`; 9 `rvcsi-*` crates on crates.io, `@ruv/rvcsi` on npm, plus a Claude Code plugin. |
+| [rvCSI — edge RF sensing runtime](https://github.com/Sachindrapandeyyy/rvcsi) | Rust-first / TypeScript-accessible / hardware-abstracted CSI runtime: multi-source ingestion (incl. real nexmon_csi `.pcap` from a **Raspberry Pi 5** / Pi 4 / Pi 3B+ — CYW43455 / BCM43455c0) → validation → DSP → typed events → RuVector RF memory ([ADR-095](docs/adr/ADR-095-rvcsi-edge-rf-sensing-platform.md), [ADR-096](docs/adr/ADR-096-rvcsi-ffi-crate-layout.md), [domain model](docs/ddd/rvcsi-domain-model.md)). Now its own repo — [`Sachindrapandeyyy/rvcsi`](https://github.com/Sachindrapandeyyy/rvcsi) — vendored here under `vendor/rvcsi`; 9 `rvcsi-*` crates on crates.io, `@ruv/rvcsi` on npm, plus a Claude Code plugin. |
 | [Desktop App](v2/crates/wifi-densepose-desktop/README.md) | **WIP** — Tauri v2 desktop app for node management, OTA updates, WASM deployment, and mesh visualization |
 | `aethersense-swarm` | Drone swarm control system (ADR-148) — hierarchical-mesh topology, Raft consensus, MARL, CSI sensing payload, MAVLink/PX4/ArduPilot compatibility, Ruflo AI-agent integration |
 | [Medical Examples](examples/medical/README.md) | Contactless blood pressure, heart rate, breathing rate via 60 GHz mmWave radar — $15 hardware, no wearable |
