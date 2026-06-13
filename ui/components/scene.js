@@ -172,6 +172,7 @@ export class Scene {
   getScene() { return this.scene; }
   getCamera() { return this.camera; }
   getRenderer() { return this.renderer; }
+  getControls() { return this.controls; }
 
   // Reset camera to default position
   resetCamera() {
