@@ -1,0 +1,31 @@
+# Tasks: Floor Plan Heatmap Upgrade
+
+- [x] Phase 7: Error Handling & Resilience in `rssi_collector.py`
+  - [x] Initialize `_last_sample` cache in `WindowsWifiCollector`
+  - [x] Implement `try-except` block around `subprocess.run` with a reduced 1.5s timeout
+  - [x] Implement graceful fallback yielding degraded sample on error
+  - [x] Explicitly detect `"disconnected"` wlan status and yield -100.0 dBm sample
+- [x] Phase 8: Signal Filtering in `feature_extractor.py`
+  - [x] Implement pure numpy 3-point rolling median filter
+  - [x] Use filtered RSSI for statistical and spectral features (variance, std, range, FFT)
+- [x] Phase 9: Adaptive Calibration in `classifier.py` & `ws_server.py`
+  - [x] Implement calibration variables & start/update methods in `PresenceClassifier`
+  - [x] Add `/api/v1/calibrate` REST route interceptor in WebSocket server
+  - [x] Feed variance into calibration loop during active calibration and broadcast state
+- [x] Phase 10: Verification & Walkthrough
+  - [x] Write and run tests
+  - [x] Manually verify calibration endpoint and connection fallback
+  - [x] Create walkthrough summary
+
+- [x] Phase 11: Implement 2D Floor Plan Heatmap Panel in `observatory.html`
+  - [x] Add `#panel-floorplan` element and canvas under `#panel-vitals`
+- [x] Phase 12: Style Floor Plan Heatmap in `observatory.css`
+  - [x] Position `#panel-vitals` to `top: 115px`
+  - [x] Style `#panel-floorplan` and canvas with neon border and dark background
+- [x] Phase 13: Implement 2D Radar Canvas Drawing in `hud-controller.js`
+  - [x] Initialize canvas and 2D context in `HudController` constructor
+  - [x] Implement `updateFloorplan(data)` method rendering walls, doors, heat grid, and occupant blips
+  - [x] Integrate call into `updateHUD()` loop
+- [x] Phase 14: Verification
+  - [x] Verify UI rendering in browser
+  - [x] Update walkthrough summary
